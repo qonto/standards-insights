@@ -1,0 +1,21 @@
+rules:
+  - name: go 1.20
+    files:
+      - path: "go.mod"
+        contains: "go 1.20"
+  - name: go main
+    files:
+      - path: "main.go"
+        contains: "^(func main)"
+  - name: golang project
+    files:
+      - path: "go.mod"
+        exists: true
+
+groups:
+  - name: golang
+    rules:
+      - go 1.20
+      - go main
+    when:
+      - golang project
