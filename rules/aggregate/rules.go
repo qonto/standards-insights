@@ -27,6 +27,32 @@ type FileRule struct {
 	Exists   *bool
 }
 
+func (rule *Rule) Check(ctx context.Context) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	messages := []string{}
+	success := true
+	if len(rule.Files) != 0 {
+		for _, fileRule := range rule.Files {
+			err := fileRule.Verify(ctx)
+			if err != nil {
+				success = false
+				summary := fileRule.Summary()
+				message := fmt.Sprintf("%s, error: %s", summary, err.Error())
+				messages = append(messages, message)
+			}
+		}
+	}
+	if !success {
+		return &RuleError{
+			RuleName: rule.Name,
+			Messages: messages,
+		}
+	}
+	return nil
+}
+
 func (r *FileRule) Verify(ctx context.Context) error {
 
 	if r.Contains != nil {

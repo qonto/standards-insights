@@ -1,59 +1,6 @@
 package rules
 
-import (
-	"context"
-	"fmt"
-	"standards/rules/aggregate"
-)
-
-func CheckRule(ctx context.Context, rule *aggregate.Rule) error {
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-	messages := []string{}
-	success := true
-	if len(rule.Files) != 0 {
-		for _, fileRule := range rule.Files {
-			err := fileRule.Verify(ctx)
-			if err != nil {
-				success = false
-				summary := fileRule.Summary()
-				message := fmt.Sprintf("%s, error: %s", summary, err.Error())
-				messages = append(messages, message)
-			}
-		}
-	}
-	if !success {
-		return &aggregate.RuleError{
-			RuleName: rule.Name,
-			Messages: messages,
-		}
-	}
-	return nil
-}
-
-type Checker struct {
-	Rules  map[string]aggregate.Rule
-	Groups map[string]aggregate.Group
-}
-
-func NewChecker(rules []aggregate.Rule, groups []aggregate.Group) *Checker {
-	checker := &Checker{
-		Rules:  make(map[string]aggregate.Rule),
-		Groups: make(map[string]aggregate.Group),
-	}
-	for _, rule := range rules {
-		checker.Rules[rule.Name] = rule
-
-	}
-	for _, group := range groups {
-		checker.Groups[group.Name] = group
-
-	}
-	return checker
-
-}
-
+/*
 func (c *Checker) CheckGroup(ctx context.Context, groupName string) (*aggregate.GroupResult, error) {
 	group, ok := c.Groups[groupName]
 	if !ok {
@@ -94,3 +41,4 @@ func (c *Checker) CheckGroup(ctx context.Context, groupName string) (*aggregate.
 	}
 	return result, nil
 }
+*/

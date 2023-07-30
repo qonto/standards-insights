@@ -1,12 +1,7 @@
 package aggregate
 
-type RuleResult struct {
-	RuleName string
-	Err      error
-}
-
-type GroupResult struct {
-	GroupName    string
-	RulesResults []RuleResult
-	Skipped      error
+type CheckResults struct {
+	RepositoryName string
+	CheckName      string
+	Success        bool
 }

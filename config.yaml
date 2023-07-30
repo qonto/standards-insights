@@ -1,21 +1,42 @@
-rules:
-  - name: go 1.20
-    files:
-      - path: "go.mod"
-        contains: "go 1.20"
-  - name: go main
-    files:
-      - path: "main.go"
-        contains: "^(func main)"
-  - name: golang project
-    files:
-      - path: "go.mod"
-        exists: true
+discovery:
+  argocd:
+    url: "https://todo.com"
 
 groups:
   - name: golang
+    checks:
+      - go-version
+      - go-main
     rules:
-      - go 1.20
-      - go main
-    when:
-      - golang project
+      - golang-projects
+
+checks:
+  - name: go-version
+    category: upgrade
+    level: bronze
+    owner: backend
+    exclude: []
+    include: []
+    rules:
+      - go-version
+  - name: go-main
+    category: misc
+    level: bronze
+    owner: backend
+    rules:
+      - go-main
+
+rules:
+  - name: golang-projects
+    files:
+      - path: "go.mod"
+        exists: true
+  - name: go-version
+    files:
+      - path: "go.mod"
+        contains: "go 1.20" #TODO: switch to semver
+  - name: go-main
+    files:
+      - path: "main.go"
+        contains: "^(func main)"
+
