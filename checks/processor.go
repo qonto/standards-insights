@@ -16,13 +16,8 @@ type CheckError struct {
 }
 
 func (c *CheckProcessor) Run() error {
-	err := c.validateConfig()
-	if err != nil {
-		return err
-	}
-
 	fmt.Println("Syncing all projects...")
-	err = c.discovery.SyncProjects()
+	err := c.discovery.SyncProjects()
 	if err != nil {
 		return err
 	}
@@ -65,10 +60,5 @@ func (c *CheckProcessor) Run() error {
 		}
 	}
 
-	return nil
-}
-
-func (c *CheckProcessor) validateConfig() error {
-	// FIXME: check if no duplicates rules & all rules exists
 	return nil
 }
