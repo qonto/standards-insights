@@ -5,20 +5,20 @@ discovery:
 groups:
   - name: golang
     checks:
-      - go-version
+      - go-version-latest
       - go-main
     rules:
       - golang-projects
 
 checks:
-  - name: go-version
+  - name: go-version-latest
     category: upgrade
     level: bronze
     owner: backend
     exclude: []
     include: []
     rules:
-      - go-version
+      - go-version-latest
   - name: go-main
     category: misc
     level: bronze
@@ -31,10 +31,10 @@ rules:
     files:
       - path: "go.mod"
         exists: true
-  - name: go-version
+  - name: go-version-latest
     files:
       - path: "go.mod"
-        contains: "go 1.20" #TODO: switch to semver
+        contains: "go 1.20"
   - name: go-main
     files:
       - path: "main.go"
