@@ -17,20 +17,13 @@ type CheckError struct {
 
 func (c *CheckProcessor) Run() error {
 	fmt.Println("Syncing all projects...")
-	err := c.discovery.SyncProjects()
+	projects, err := c.discovery.SyncProjects()
 	if err != nil {
 		return err
 	}
 	fmt.Println("Done!")
 
-	checkResults := []aggregate.CheckResults{}
-
-	for true {
-		if !c.discovery.HasNext() {
-			break
-		}
-
-		project := c.discovery.GetNext()
+	for _, project := range projects {
 		fmt.Printf("💡 Checking project '%s' against groups\n", project.Name)
 
 		for _, group := range c.config.Groups {
@@ -43,18 +36,22 @@ func (c *CheckProcessor) Run() error {
 			for _, check := range group.Checks {
 				fmt.Printf("Running check %s for project %s\n", check.Name, project.Name)
 
-				project.CheckResults = append(checkResults, aggregate.CheckResult{
+				project.CheckResults = append(project.CheckResults, aggregate.CheckResult{
 					Check:   check,
 					Success: check.IsMatchingRules(),
 				})
 			}
 		}
+	}
 
-		for _, result := range checkResults {
+	fmt.Println("\n\nResults:")
+	for _, project := range projects {
+		fmt.Printf("== Project %s\n", project.Name)
+		for _, result := range project.CheckResults {
 			if result.Success {
-				fmt.Printf("✅ Repo: %s checked %s\n", result.RepositoryName, result.CheckName)
+				fmt.Printf("✅ Check %s PASS (level: %s, category: %s)\n", result.Check.Name, result.Check.Level, result.Check.Category)
 			} else {
-				fmt.Printf("🚨 Repo: %s checked %s\n", result.RepositoryName, result.CheckName)
+				fmt.Printf("🚨 Check %s FAILED (level: %s, category: %s)\n", result.Check.Name, result.Check.Level, result.Check.Category)
 			}
 		}
 	}

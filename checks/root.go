@@ -11,9 +11,7 @@ type CheckProcessor struct {
 }
 
 type Discovery interface {
-	SyncProjects() error
-	HasNext() bool
-	GetNext() aggregate.Project
+	SyncProjects() ([]*aggregate.Project, error)
 }
 
 func NewProcessor(config *config.Config, discovery Discovery) *CheckProcessor {
