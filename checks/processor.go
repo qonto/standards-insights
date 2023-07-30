@@ -43,10 +43,9 @@ func (c *CheckProcessor) Run() error {
 			for _, check := range group.Checks {
 				fmt.Printf("Running check %s for project %s\n", check.Name, project.Name)
 
-				checkResults = append(checkResults, aggregate.CheckResults{
-					RepositoryName: project.Name,
-					CheckName:      check.Name,
-					Success:        check.IsMatchingRules(),
+				project.CheckResults = append(checkResults, aggregate.CheckResult{
+					Check:   check,
+					Success: check.IsMatchingRules(),
 				})
 			}
 		}

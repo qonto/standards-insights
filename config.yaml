@@ -13,7 +13,7 @@ groups:
 checks:
   - name: go-version-latest
     category: upgrade
-    level: bronze
+    level: gold
     owner: backend
     exclude: []
     include: []
