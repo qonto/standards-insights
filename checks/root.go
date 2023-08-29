@@ -2,21 +2,14 @@ package checks
 
 import (
 	"standards/config"
-	"standards/rules/aggregate"
 )
 
 type CheckProcessor struct {
-	config    *config.Config
-	discovery Discovery
+	config *config.Config
 }
 
-type Discovery interface {
-	SyncProjects() ([]*aggregate.Project, error)
-}
-
-func NewProcessor(config *config.Config, discovery Discovery) *CheckProcessor {
+func NewProcessor(config *config.Config) *CheckProcessor {
 	return &CheckProcessor{
-		config:    config,
-		discovery: discovery,
+		config: config,
 	}
 }

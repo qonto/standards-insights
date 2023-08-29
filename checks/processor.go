@@ -15,14 +15,7 @@ type CheckError struct {
 	Message string
 }
 
-func (c *CheckProcessor) Run() error {
-	fmt.Println("Syncing all projects...")
-	projects, err := c.discovery.SyncProjects()
-	if err != nil {
-		return err
-	}
-	fmt.Println("Done!")
-
+func (c *CheckProcessor) Run(projects []*aggregate.Project) error {
 	for _, project := range projects {
 		fmt.Printf("💡 Checking project '%s' against groups\n", project.Name)
 

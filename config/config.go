@@ -58,10 +58,10 @@ type ArgoCDConfig struct {
 	URL string
 }
 
-func New() (*Config, error) {
+func New(path string) (*Config, error) {
 	var raw rawConfig
 
-	file, err := os.ReadFile("config.yaml")
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("Could not find config file: %v", err)
 	}

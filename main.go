@@ -1,7 +1,13 @@
 package main
 
-import "standards/cmd"
+import (
+	"os"
+	"standards/cmd"
+)
 
 func main() {
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		os.Exit(1)
+	}
 }

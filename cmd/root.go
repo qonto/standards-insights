@@ -1,24 +1,20 @@
 package cmd
 
 import (
-	"standards/checks"
-	"standards/config"
-	"standards/discovery"
+	"github.com/spf13/cobra"
 )
 
-func Run() {
-	config, err := config.New()
-	if err != nil {
-		panic(err)
+func Run() error {
+	configPath := ""
+	rootCmd := &cobra.Command{
+		Use:   "qstandards",
+		Short: "Standard insights",
 	}
 
-	// Debug config parsing
-	// fmt.Printf("Config: %s\n", config)
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "config.yaml", "Config path")
 
-	discovery := discovery.New(config)
-	processor := checks.NewProcessor(config, discovery) // TODO: find better name than processor
-	err = processor.Run()
-	if err != nil {
-		panic(err)
-	}
+	rootCmd.AddCommand(batchCmd(&configPath))
+	rootCmd.AddCommand(runCmd(&configPath))
+
+	return rootCmd.Execute()
 }

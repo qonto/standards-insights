@@ -9,3 +9,4 @@ Config: config.yaml
 ## Fill missing parts
 
 `grep -rn 'FIXME' ./*`
+`grep -rn 'TODO' ./*`
