@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"standards/rules/aggregate"
 
 	"gopkg.in/yaml.v3"
@@ -64,13 +63,12 @@ type ArgoCDConfig struct {
 func New(path string) (*Config, error) {
 	var raw rawConfig
 
-	// TODO: supports path URL, exemple --config=https://google.com
-
-	file, err := os.ReadFile(path)
+	content, err := getConfigYaml(path)
 	if err != nil {
-		return nil, fmt.Errorf("Could not find config file: %v", err)
+		return nil, err
 	}
-	err = yaml.Unmarshal(file, &raw)
+
+	err = yaml.Unmarshal(content, &raw)
 	if err != nil {
 		return nil, err
 	}
