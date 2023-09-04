@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"standards/checks"
 	"standards/config"
-	"standards/discovery"
+	"standards/providers"
 
 	"github.com/spf13/cobra"
 )
 
 func batchCmd(configPath *string) *cobra.Command {
+	provider := ""
 	cmd := &cobra.Command{
 		Use:   "batch",
 		Short: "Run checks on all projects",
@@ -19,21 +20,30 @@ func batchCmd(configPath *string) *cobra.Command {
 				panic(err)
 			}
 
-			fmt.Println("Syncing all projects...")
-			discovery := discovery.New(config)
-			projects, err := discovery.SyncProjects()
+			providers, err := providers.NewProviders(&config.Providers, []string{"argocd"})
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println("Done!")
 
 			processor := checks.NewProcessor(config)
-			err = processor.Run(projects)
-			if err != nil {
-				panic(err)
+
+			for _, provider := range providers {
+				projects, err := provider.FetchProjects()
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Done!")
+
+				err = processor.Run(projects)
+				if err != nil {
+					panic(err)
+				}
 			}
 		},
 	}
+
+	// TODO: allow to repeat flag
+	cmd.PersistentFlags().StringVarP(&provider, "provider", "p", "", "Filter providers")
 
 	return cmd
 }

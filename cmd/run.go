@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"standards/checks"
 	"standards/config"
-	"standards/rules/aggregate"
+	"standards/providers"
 
 	"github.com/spf13/cobra"
 )
@@ -26,11 +26,12 @@ func runCmd(configPath *string) *cobra.Command {
 			}
 
 			processor := checks.NewProcessor(config)
-			project := aggregate.Project{
-				Path: ".",
-				Name: filepath.Base(dir),
+			projects := []providers.Project{
+				{
+					Path: ".",
+					Name: filepath.Base(dir),
+				},
 			}
-			projects := []*aggregate.Project{&project}
 			err = processor.Run(projects)
 			if err != nil {
 				panic(err)

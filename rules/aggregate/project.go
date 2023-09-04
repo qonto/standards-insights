@@ -1,7 +1,6 @@
 package aggregate
 
-type Project struct {
-	Path         string
+type ProjectResult struct {
 	Name         string
 	CheckResults []CheckResult
 }

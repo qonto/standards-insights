@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	Discovery ConfigDiscovery
+	Providers ProvidersConfig
 	Groups    []*aggregate.Group
 
 	// Should stay private because only groups is needed in public
@@ -19,7 +19,7 @@ type Config struct {
 }
 
 type rawConfig struct {
-	Discovery ConfigDiscovery
+	Providers ProvidersConfig
 	Groups    []Group
 	Checks    []Check
 	Rules     []Rule
@@ -50,9 +50,12 @@ type ConfigCheck struct {
 	Name string
 }
 
-type ConfigDiscovery struct {
+type ProvidersConfig struct {
 	ArgoCD ArgoCDConfig
+	Git    GitConfig
 }
+
+type GitConfig []string
 
 type ArgoCDConfig struct {
 	URL string
@@ -60,6 +63,8 @@ type ArgoCDConfig struct {
 
 func New(path string) (*Config, error) {
 	var raw rawConfig
+
+	// TODO: supports path URL, exemple --config=https://google.com
 
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -72,7 +77,7 @@ func New(path string) (*Config, error) {
 
 	// Init new struct
 	config := &Config{
-		Discovery: raw.Discovery,
+		Providers: raw.Providers,
 		Groups:    make([]*aggregate.Group, len(raw.Groups)),
 		rules:     make([]*aggregate.Rule, len(raw.Rules)),
 		checks:    make([]*aggregate.Check, len(raw.Checks)),

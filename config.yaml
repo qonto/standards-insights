@@ -1,6 +1,7 @@
-discovery:
+providers:
   argocd:
     url: "https://todo.com"
+  git: []
 
 groups:
   - name: golang

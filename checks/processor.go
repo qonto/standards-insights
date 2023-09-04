@@ -2,6 +2,7 @@ package checks
 
 import (
 	"fmt"
+	"standards/providers"
 	"standards/rules/aggregate"
 )
 
@@ -15,8 +16,14 @@ type CheckError struct {
 	Message string
 }
 
-func (c *CheckProcessor) Run(projects []*aggregate.Project) error {
-	for _, project := range projects {
+func (c *CheckProcessor) Run(projects []providers.Project) error {
+	projectResults := make([]*aggregate.ProjectResult, len(projects))
+	for i, project := range projects {
+		projectResult := &aggregate.ProjectResult{
+			Name:         project.Name,
+			CheckResults: []aggregate.CheckResult{},
+		}
+		projectResults[i] = projectResult
 		fmt.Printf("💡 Checking project '%s' against groups\n", project.Name)
 
 		for _, group := range c.config.Groups {
@@ -29,7 +36,7 @@ func (c *CheckProcessor) Run(projects []*aggregate.Project) error {
 			for _, check := range group.Checks {
 				fmt.Printf("Running check %s for project %s\n", check.Name, project.Name)
 
-				project.CheckResults = append(project.CheckResults, aggregate.CheckResult{
+				projectResult.CheckResults = append(projectResult.CheckResults, aggregate.CheckResult{
 					Check:   check,
 					Success: check.IsMatchingRules(),
 				})
@@ -38,7 +45,7 @@ func (c *CheckProcessor) Run(projects []*aggregate.Project) error {
 	}
 
 	fmt.Println("\n\nResults:")
-	for _, project := range projects {
+	for _, project := range projectResults {
 		fmt.Printf("== Project %s\n", project.Name)
 		for _, result := range project.CheckResults {
 			if result.Success {

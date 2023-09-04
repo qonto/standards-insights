@@ -14,6 +14,7 @@ func Run() error {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "config.yaml", "Config path")
 
 	rootCmd.AddCommand(batchCmd(&configPath))
+	rootCmd.AddCommand(serverCmd(&configPath))
 	rootCmd.AddCommand(runCmd(&configPath))
 
 	return rootCmd.Execute()
