@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"standards/checks"
 	"standards/config"
 	"standards/providers"
+	"standards/rules"
 
 	"github.com/spf13/cobra"
 )
@@ -25,14 +27,16 @@ func runCmd(configPath *string) *cobra.Command {
 				panic(err)
 			}
 
-			processor := checks.NewProcessor(config)
+			ruler := rules.NewRuler(config.Rules)
+
+			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
 			projects := []providers.Project{
 				{
 					Path: ".",
 					Name: filepath.Base(dir),
 				},
 			}
-			err = processor.Run(projects)
+			err = checker.Run(context.Background(), projects)
 			if err != nil {
 				panic(err)
 			}

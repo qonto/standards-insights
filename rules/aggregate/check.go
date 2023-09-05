@@ -1,22 +1,14 @@
 package aggregate
 
-import "context"
-
 type Check struct {
-	Name     string
-	Category string
-	Level    string
-	Exclude  []string
-	Include  []string
-	Rules    []*Rule
+	Name   string
+	Labels map[string]string
+	Rules  []string
 }
 
-func (c *Check) IsMatchingRules() bool {
-	for _, rule := range c.Rules {
-		err := rule.Check(context.Background())
-		if err != nil {
-			return false
-		}
-	}
-	return true
+type CheckResult struct {
+	Name    string
+	Success bool
+	Labels  map[string]string
+	Results []RuleResult
 }

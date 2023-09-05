@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,13 +11,13 @@ import (
 func getConfigYaml(path string) ([]byte, error) {
 	if strings.HasPrefix(path, "http") {
 		res, err := http.Get(path)
-		defer res.Body.Close()
 		if err != nil {
 			return nil, err
 		}
+		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusOK {
-			return nil, errors.New(fmt.Sprintf("Request returned: %d", res.StatusCode))
+			return nil, fmt.Errorf("Request returned: %d", res.StatusCode)
 		}
 
 		resBody, err := io.ReadAll(res.Body)
