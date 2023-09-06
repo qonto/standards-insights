@@ -8,7 +8,7 @@ groups:
     checks:
       - go-version-latest
       - go-main
-    rules:
+    when:
       - golang-projects
 
 checks:

@@ -3,15 +3,16 @@ package rules
 import (
 	"context"
 	"fmt"
-	"standards/rules/aggregate"
+
+	"standards/rules/aggregates"
 )
 
 type Ruler struct {
-	rules map[string]aggregate.Rule
+	rules map[string]aggregates.Rule
 }
 
-func NewRuler(rules []aggregate.Rule) *Ruler {
-	rulesMap := make(map[string]aggregate.Rule)
+func NewRuler(rules []aggregates.Rule) *Ruler {
+	rulesMap := make(map[string]aggregates.Rule)
 
 	for _, rule := range rules {
 		rulesMap[rule.Name] = rule
@@ -22,10 +23,10 @@ func NewRuler(rules []aggregate.Rule) *Ruler {
 	}
 }
 
-func (r *Ruler) Execute(ctx context.Context, ruleName string) aggregate.RuleResult {
+func (r *Ruler) Execute(ctx context.Context, ruleName string) aggregates.RuleResult {
 	rule, ok := r.rules[ruleName]
 	if !ok {
-		return aggregate.RuleResult{
+		return aggregates.RuleResult{
 			Success:  false,
 			RuleName: ruleName,
 			Messages: []string{fmt.Sprintf("rule %s not found in the rules configuration", ruleName)},
@@ -37,13 +38,13 @@ func (r *Ruler) Execute(ctx context.Context, ruleName string) aggregate.RuleResu
 		errorMessages = append(errorMessages, err.Error())
 	}
 	if len(errorMessages) > 0 {
-		return aggregate.RuleResult{
+		return aggregates.RuleResult{
 			Success:  false,
 			RuleName: ruleName,
 			Messages: errorMessages,
 		}
 	}
-	return aggregate.RuleResult{
+	return aggregates.RuleResult{
 		Success:  true,
 		RuleName: ruleName,
 	}

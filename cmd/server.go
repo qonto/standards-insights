@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func serverCmd(configPath *string) *cobra.Command {
+func serverCmd(configPath *string) *cobra.Command { //nolint
 	provider := ""
 	cmd := &cobra.Command{
 		Use:   "server",

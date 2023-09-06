@@ -1,4 +1,6 @@
-package aggregate
+package aggregates
+
+import "standards/types"
 
 type Rule struct {
 	Name  string
@@ -7,7 +9,7 @@ type Rule struct {
 
 type FileRule struct {
 	Path     string
-	Contains *Regexp
+	Contains *types.Regexp
 	Exists   *bool
 }
 

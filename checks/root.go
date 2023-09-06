@@ -2,22 +2,23 @@ package checks
 
 import (
 	"context"
-	"standards/rules/aggregate"
+
+	"standards/checks/aggregates"
+	rulestypes "standards/rules/aggregates"
 )
 
 type Ruler interface {
-	Execute(ctx context.Context, ruleName string) aggregate.RuleResult
+	Execute(ctx context.Context, ruleName string) rulestypes.RuleResult
 }
 
 type Checker struct {
 	ruler  Ruler
-	checks map[string]aggregate.Check
-	groups []aggregate.Group
+	checks map[string]aggregates.Check
+	groups []aggregates.Group
 }
 
-func NewChecker(ruler Ruler, checks []aggregate.Check, groups []aggregate.Group) *Checker {
-
-	checksMap := make(map[string]aggregate.Check)
+func NewChecker(ruler Ruler, checks []aggregates.Check, groups []aggregates.Group) *Checker {
+	checksMap := make(map[string]aggregates.Check)
 	for _, check := range checks {
 		checksMap[check.Name] = check
 	}

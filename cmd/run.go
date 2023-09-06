@@ -4,9 +4,10 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+
 	"standards/checks"
 	"standards/config"
-	"standards/providers"
+	"standards/providers/aggregates"
 	"standards/rules"
 
 	"github.com/spf13/cobra"
@@ -30,7 +31,7 @@ func runCmd(configPath *string) *cobra.Command {
 			ruler := rules.NewRuler(config.Rules)
 
 			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
-			projects := []providers.Project{
+			projects := []aggregates.Project{
 				{
 					Path: ".",
 					Name: filepath.Base(dir),

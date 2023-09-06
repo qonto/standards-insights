@@ -3,26 +3,18 @@ package checks
 import (
 	"context"
 	"fmt"
-	"standards/providers"
-	"standards/rules/aggregate"
+
+	"standards/checks/aggregates"
+	providerstypes "standards/providers/aggregates"
+	rulestypes "standards/rules/aggregates"
 )
 
-type ProjectResult struct {
-	Name        string
-	CheckErrors []CheckError
-}
-
-type CheckError struct {
-	Name    string
-	Message string
-}
-
-func (c *Checker) executeCheck(ctx context.Context, check aggregate.Check) aggregate.CheckResult {
+func (c *Checker) executeCheck(ctx context.Context, check aggregates.Check) aggregates.CheckResult {
 	success := true
-	checkResult := aggregate.CheckResult{
+	checkResult := aggregates.CheckResult{
 		Name:    check.Name,
 		Labels:  check.Labels,
-		Results: []aggregate.RuleResult{},
+		Results: []rulestypes.RuleResult{},
 	}
 	for _, rule := range check.Rules {
 		ruleResult := c.ruler.Execute(ctx, rule)
@@ -35,8 +27,8 @@ func (c *Checker) executeCheck(ctx context.Context, check aggregate.Check) aggre
 	return checkResult
 }
 
-func (c *Checker) skipGroup(ctx context.Context, group aggregate.Group) bool {
-	for _, rule := range group.Rules {
+func (c *Checker) shouldSkipGroup(ctx context.Context, group aggregates.Group) bool {
+	for _, rule := range group.When {
 		ruleResult := c.ruler.Execute(ctx, rule)
 		if !ruleResult.Success {
 			return true
@@ -45,8 +37,8 @@ func (c *Checker) skipGroup(ctx context.Context, group aggregate.Group) bool {
 	return false
 }
 
-func (c *Checker) executeGroup(ctx context.Context, group aggregate.Group) []aggregate.CheckResult {
-	result := []aggregate.CheckResult{}
+func (c *Checker) executeGroup(ctx context.Context, group aggregates.Group) []aggregates.CheckResult {
+	result := []aggregates.CheckResult{}
 	for _, checkName := range group.Checks {
 		// TODO check exists
 		check := c.checks[checkName]
@@ -56,24 +48,24 @@ func (c *Checker) executeGroup(ctx context.Context, group aggregate.Group) []agg
 	return result
 }
 
-func (c *Checker) Run(ctx context.Context, projects []providers.Project) error {
-	projectResults := []aggregate.ProjectResult{}
-	for _, project := range projects {
+func (c *Checker) Run(ctx context.Context, projects []providerstypes.Project) error {
+	projectResults := make([]aggregates.ProjectResult, len(projects))
+	for i, project := range projects {
 		// TODO
 		// the project should be passed to every layers because the rules should be executed for
 		// each project
-		projectResult := aggregate.ProjectResult{
+		projectResult := aggregates.ProjectResult{
 			Name:         project.Name,
-			CheckResults: []aggregate.CheckResult{},
+			CheckResults: []aggregates.CheckResult{},
 		}
 		for _, group := range c.groups {
-			if c.skipGroup(ctx, group) {
+			if c.shouldSkipGroup(ctx, group) {
 				continue
 			}
 			checkResults := c.executeGroup(ctx, group)
 			projectResult.CheckResults = append(projectResult.CheckResults, checkResults...)
 		}
-		projectResults = append(projectResults, projectResult)
+		projectResults[i] = projectResult
 	}
 	for _, project := range projectResults {
 		fmt.Printf("== Project %s\n", project.Name)

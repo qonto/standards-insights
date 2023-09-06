@@ -1,16 +1,17 @@
 package config
 
 import (
-	"standards/rules/aggregate"
+	checkstypes "standards/checks/aggregates"
+	rulestypes "standards/rules/aggregates"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	Providers ProvidersConfig
-	Groups    []aggregate.Group
-	Checks    []aggregate.Check
-	Rules     []aggregate.Rule
+	Groups    []checkstypes.Group
+	Checks    []checkstypes.Check
+	Rules     []rulestypes.Rule
 }
 
 type ProvidersConfig struct {

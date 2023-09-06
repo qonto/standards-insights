@@ -6,17 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"standards/rules/aggregate"
 	"strings"
+
+	"standards/rules/aggregates"
 )
 
-func executeFileRule(ctx context.Context, fileRule aggregate.FileRule) error {
+func executeFileRule(_ context.Context, fileRule aggregates.FileRule) error {
 	if fileRule.Contains != nil {
 		file, err := os.Open(fileRule.Path)
 		if err != nil {
 			return fmt.Errorf("fail to read file %s: %w", fileRule.Path, err)
 		}
-		defer file.Close()
+		defer file.Close() //nolint
 
 		scanner := bufio.NewScanner(file)
 
@@ -49,7 +50,7 @@ func executeFileRule(ctx context.Context, fileRule aggregate.FileRule) error {
 	return nil
 }
 
-func executeFileRules(ctx context.Context, rule aggregate.Rule) error {
+func executeFileRules(ctx context.Context, rule aggregates.Rule) error {
 	errorMessages := []string{}
 	if len(rule.Files) != 0 {
 		for _, fileRule := range rule.Files {

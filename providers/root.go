@@ -1,11 +1,13 @@
 package providers
 
-import "standards/config"
+import (
+	"standards/config"
+	"standards/providers/aggregates"
+)
 
-type Client struct {
-}
+type Client struct{}
 
-func NewProviders(config *config.ProvidersConfig, filters []string) ([]Provider, error) {
+func NewProviders(config *config.ProvidersConfig, filters []string) ([]aggregates.Provider, error) {
 	// TODO: fixme
-	return []Provider{}, nil
+	return []aggregates.Provider{}, nil
 }
