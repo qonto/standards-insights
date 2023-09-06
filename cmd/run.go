@@ -7,6 +7,7 @@ import (
 
 	"github.com/qonto/standards-insights/checks"
 	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/outputs"
 	"github.com/qonto/standards-insights/providers/aggregates"
 	"github.com/qonto/standards-insights/rules"
 
@@ -21,20 +22,15 @@ func runCmd(configPath *string) *cobra.Command {
 			RunLocalCheck(*configPath)
 		},
 	}
-
 	return cmd
 }
 
 func RunLocalCheck(configPath string) {
 	config, err := config.New(configPath)
-	if err != nil {
-		panic(err)
-	}
+	exit(err)
 
 	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
+	exit(err)
 
 	ruler := rules.NewRuler(config.Rules)
 
@@ -45,8 +41,6 @@ func RunLocalCheck(configPath string) {
 			Name: filepath.Base(dir),
 		},
 	}
-	err = checker.Run(context.Background(), projects)
-	if err != nil {
-		panic(err)
-	}
+	results := checker.Run(context.Background(), projects)
+	outputs.Stdout(results)
 }

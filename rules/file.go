@@ -6,14 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	providerstypes "github.com/qonto/standards-insights/providers/aggregates"
 	"github.com/qonto/standards-insights/rules/aggregates"
 )
 
-func executeFileRule(_ context.Context, fileRule aggregates.FileRule) error {
+func executeFileRule(_ context.Context, fileRule aggregates.FileRule, project providerstypes.Project) error {
+	path := filepath.Join(project.Path, fileRule.Path)
 	if fileRule.Contains != nil {
-		file, err := os.Open(fileRule.Path)
+		file, err := os.Open(path) //nolint
 		if err != nil {
 			return fmt.Errorf("fail to read file %s: %w", fileRule.Path, err)
 		}
@@ -36,7 +39,7 @@ func executeFileRule(_ context.Context, fileRule aggregates.FileRule) error {
 	}
 	if fileRule.Exists != nil {
 		exists := *fileRule.Exists
-		_, err := os.Stat(fileRule.Path)
+		_, err := os.Stat(path)
 		if exists {
 			if err != nil {
 				return fmt.Errorf("file %s does not exist", fileRule.Path)
@@ -50,11 +53,11 @@ func executeFileRule(_ context.Context, fileRule aggregates.FileRule) error {
 	return nil
 }
 
-func executeFileRules(ctx context.Context, rule aggregates.Rule) error {
+func executeFileRules(ctx context.Context, rule aggregates.Rule, project providerstypes.Project) error {
 	errorMessages := []string{}
 	if len(rule.Files) != 0 {
 		for _, fileRule := range rule.Files {
-			err := executeFileRule(ctx, fileRule)
+			err := executeFileRule(ctx, fileRule, project)
 			if err != nil {
 				message := err.Error()
 				errorMessages = append(errorMessages, message)
