@@ -16,11 +16,11 @@ RUN addgroup -S standards && adduser -u 1234 -S standards -G standards
 # https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups
 USER 1234
 WORKDIR ${HOME}/app
-COPY --from=builder /src/standards .
+COPY --from=builder /src/standards-insights .
 
 EXPOSE 3000
 
-ENTRYPOINT ["./standards"]
+ENTRYPOINT ["./standards-insights"]
 
 
 
