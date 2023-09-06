@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	providerstypes "github.com/qonto/standards-insights/providers/aggregates"
 	"github.com/qonto/standards-insights/rules/aggregates"
 )
 
@@ -23,7 +24,7 @@ func NewRuler(rules []aggregates.Rule) *Ruler {
 	}
 }
 
-func (r *Ruler) Execute(ctx context.Context, ruleName string) aggregates.RuleResult {
+func (r *Ruler) Execute(ctx context.Context, ruleName string, project providerstypes.Project) aggregates.RuleResult {
 	rule, ok := r.rules[ruleName]
 	if !ok {
 		return aggregates.RuleResult{
@@ -33,7 +34,7 @@ func (r *Ruler) Execute(ctx context.Context, ruleName string) aggregates.RuleRes
 		}
 	}
 	errorMessages := []string{}
-	err := executeFileRules(ctx, rule)
+	err := executeFileRules(ctx, rule, project)
 	if err != nil {
 		errorMessages = append(errorMessages, err.Error())
 	}

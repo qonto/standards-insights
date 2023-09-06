@@ -6,6 +6,7 @@ import (
 
 	"github.com/qonto/standards-insights/checks"
 	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/outputs"
 	"github.com/qonto/standards-insights/providers"
 	"github.com/qonto/standards-insights/rules"
 
@@ -19,14 +20,10 @@ func batchCmd(configPath *string) *cobra.Command {
 		Short: "Run checks on all projects",
 		Run: func(cmd *cobra.Command, args []string) {
 			config, err := config.New(*configPath)
-			if err != nil {
-				panic(err)
-			}
+			exit(err)
 
 			providers, err := providers.NewProviders(&config.Providers, []string{"argocd"})
-			if err != nil {
-				panic(err)
-			}
+			exit(err)
 
 			ruler := rules.NewRuler(config.Rules)
 
@@ -34,15 +31,11 @@ func batchCmd(configPath *string) *cobra.Command {
 
 			for _, provider := range providers {
 				projects, err := provider.FetchProjects()
-				if err != nil {
-					panic(err)
-				}
+				exit(err)
 				fmt.Println("Done!")
 
-				err = checker.Run(context.Background(), projects)
-				if err != nil {
-					panic(err)
-				}
+				results := checker.Run(context.Background(), projects)
+				outputs.Stdout(results)
 			}
 		},
 	}
