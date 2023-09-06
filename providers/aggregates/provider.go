@@ -1,4 +1,4 @@
-package providers
+package aggregates
 
 type Provider interface {
 	FetchProjects() ([]Project, error)

@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+
 	"standards/checks"
 	"standards/config"
 	"standards/providers"
+	"standards/rules"
 
 	"github.com/spf13/cobra"
 )
@@ -25,7 +28,9 @@ func batchCmd(configPath *string) *cobra.Command {
 				panic(err)
 			}
 
-			processor := checks.NewProcessor(config)
+			ruler := rules.NewRuler(config.Rules)
+
+			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
 
 			for _, provider := range providers {
 				projects, err := provider.FetchProjects()
@@ -34,7 +39,7 @@ func batchCmd(configPath *string) *cobra.Command {
 				}
 				fmt.Println("Done!")
 
-				err = processor.Run(projects)
+				err = checker.Run(context.Background(), projects)
 				if err != nil {
 					panic(err)
 				}

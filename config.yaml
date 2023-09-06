@@ -8,22 +8,22 @@ groups:
     checks:
       - go-version-latest
       - go-main
-    rules:
+    when:
       - golang-projects
 
 checks:
   - name: go-version-latest
-    category: upgrade
-    level: gold
-    owner: backend
-    exclude: []
-    include: []
+    labels:
+      category: upgrade
+      level: gold
+      owner: backend
     rules:
       - go-version-latest
   - name: go-main
-    category: misc
-    level: bronze
-    owner: backend
+    labels:
+      category: misc
+      level: bronze
+      owner: backend
     rules:
       - go-main
 

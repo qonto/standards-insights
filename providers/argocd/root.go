@@ -2,7 +2,7 @@ package argocd
 
 import (
 	"standards/config"
-	"standards/rules/aggregate"
+	"standards/providers/aggregates"
 )
 
 type Client struct {
@@ -15,6 +15,7 @@ func New(config *config.ArgoCDConfig) *Client {
 	}
 }
 
-func (c *Client) FetchProjects() ([]*aggregate.Project, error) {
+func (c *Client) FetchProjects() ([]*aggregates.Project, error) {
 	// TODO: fixme
+	return nil, nil
 }

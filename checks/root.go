@@ -1,15 +1,30 @@
 package checks
 
 import (
-	"standards/config"
+	"context"
+
+	"standards/checks/aggregates"
+	rulestypes "standards/rules/aggregates"
 )
 
-type CheckProcessor struct {
-	config *config.Config
+type Ruler interface {
+	Execute(ctx context.Context, ruleName string) rulestypes.RuleResult
 }
 
-func NewProcessor(config *config.Config) *CheckProcessor {
-	return &CheckProcessor{
-		config: config,
+type Checker struct {
+	ruler  Ruler
+	checks map[string]aggregates.Check
+	groups []aggregates.Group
+}
+
+func NewChecker(ruler Ruler, checks []aggregates.Check, groups []aggregates.Group) *Checker {
+	checksMap := make(map[string]aggregates.Check)
+	for _, check := range checks {
+		checksMap[check.Name] = check
+	}
+	return &Checker{
+		ruler:  ruler,
+		checks: checksMap,
+		groups: groups,
 	}
 }
