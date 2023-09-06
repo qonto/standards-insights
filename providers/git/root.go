@@ -1,8 +1,8 @@
 package git
 
 import (
-	"standards/config"
-	"standards/providers/aggregates"
+	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/providers/aggregates"
 )
 
 type Client struct {
