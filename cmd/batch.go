@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"standards/checks"
-	"standards/config"
-	"standards/providers"
-	"standards/rules"
+	"github.com/qonto/standards-insights/checks"
+	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/providers"
+	"github.com/qonto/standards-insights/rules"
 
 	"github.com/spf13/cobra"
 )

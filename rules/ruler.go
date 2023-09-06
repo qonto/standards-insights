@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"standards/rules/aggregates"
+	"github.com/qonto/standards-insights/rules/aggregates"
 )
 
 type Ruler struct {

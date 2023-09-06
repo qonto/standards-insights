@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"standards/checks/aggregates"
-	providerstypes "standards/providers/aggregates"
-	rulestypes "standards/rules/aggregates"
+	providerstypes "github.com/qonto/standards-insights/providers/aggregates"
+	rulestypes "github.com/qonto/standards-insights/rules/aggregates"
+
+	"github.com/qonto/standards-insights/checks/aggregates"
 )
 
 func (c *Checker) executeCheck(ctx context.Context, check aggregates.Check) aggregates.CheckResult {

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"standards/cmd"
+	"github.com/qonto/standards-insights/cmd"
 )
 
 func main() {

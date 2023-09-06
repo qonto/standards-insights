@@ -1,6 +1,6 @@
 package aggregates
 
-import "standards/rules/aggregates"
+import "github.com/qonto/standards-insights/rules/aggregates"
 
 type Check struct {
 	Name   string

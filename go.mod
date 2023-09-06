@@ -1,4 +1,4 @@
-module standards
+module github.com/qonto/standards-insights
 
 go 1.20
 

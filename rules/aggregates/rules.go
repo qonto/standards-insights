@@ -1,6 +1,6 @@
 package aggregates
 
-import "standards/types"
+import "github.com/qonto/standards-insights/types"
 
 type Rule struct {
 	Name  string

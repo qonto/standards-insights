@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"standards/rules/aggregates"
+	"github.com/qonto/standards-insights/rules/aggregates"
 )
 
 func executeFileRule(_ context.Context, fileRule aggregates.FileRule) error {

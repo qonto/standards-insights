@@ -1,8 +1,8 @@
 package config
 
 import (
-	checkstypes "standards/checks/aggregates"
-	rulestypes "standards/rules/aggregates"
+	checkstypes "github.com/qonto/standards-insights/checks/aggregates"
+	rulestypes "github.com/qonto/standards-insights/rules/aggregates"
 
 	"gopkg.in/yaml.v3"
 )

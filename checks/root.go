@@ -3,8 +3,8 @@ package checks
 import (
 	"context"
 
-	"standards/checks/aggregates"
-	rulestypes "standards/rules/aggregates"
+	"github.com/qonto/standards-insights/checks/aggregates"
+	rulestypes "github.com/qonto/standards-insights/rules/aggregates"
 )
 
 type Ruler interface {
