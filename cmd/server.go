@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 
@@ -15,9 +14,9 @@ import (
 	"github.com/qonto/standards-insights/checks"
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/daemon"
+	"github.com/qonto/standards-insights/git"
 	"github.com/qonto/standards-insights/http"
 	"github.com/qonto/standards-insights/metrics"
-	"github.com/qonto/standards-insights/providers/aggregates"
 	"github.com/qonto/standards-insights/rules"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +29,9 @@ func serverCmd(configPath *string) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			config, err := config.New(*configPath)
 			exit(err)
-			logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+			var programLevel = new(slog.LevelVar)
+			programLevel.Set(slog.LevelDebug)
+			logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: programLevel}))
 			registry, ok := prometheus.DefaultRegisterer.(*prometheus.Registry)
 			if !ok {
 				exit(errors.New("fail to use the Prometheus default registerer"))
@@ -49,19 +50,14 @@ func serverCmd(configPath *string) *cobra.Command {
 			err = server.Start()
 			exit(err)
 
-			dir, err := os.Getwd()
+			git, err := git.New(logger, config.Git)
 			exit(err)
 
 			ruler := rules.NewRuler(config.Rules)
 			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
-			projects := []aggregates.Project{
-				{
-					Path: ".",
-					Name: filepath.Base(dir),
-				},
-			}
 
-			daemon := daemon.New(checker, projects, projectMetrics, logger, (time.Duration(config.Interval) * time.Second))
+			projects := config.Providers.Static
+			daemon := daemon.New(checker, projects, projectMetrics, logger, (time.Duration(config.Interval) * time.Second), git)
 			daemon.Start()
 
 			go func() {

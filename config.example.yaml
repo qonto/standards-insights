@@ -18,9 +18,20 @@ labels:
 interval: 10
 
 providers:
-  argocd:
-    url: "https://todo.com"
-  git: []
+  static:
+    - name: "my-service"
+      url: https://github.com/foo/bar.git
+      branch: "master"
+      path: "/tmp/my-service"
+
+
+git:
+  basic-auth:
+    username: oauth2
+    password: pass # You can use GIT_BASIC_AUTH_PASSWORD as well
+  private-key:
+    path: /home/mcorbin/.ssh/my_ssh_private_key
+    password: key-password # you can use GIT_PRIVATE_KEY_PASSWORD
 
 groups:
   - name: golang
