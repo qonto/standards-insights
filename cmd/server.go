@@ -1,19 +1,89 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+	"time"
 
+	"log/slog"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/qonto/standards-insights/checks"
+	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/daemon"
+	"github.com/qonto/standards-insights/http"
+	"github.com/qonto/standards-insights/metrics"
+	"github.com/qonto/standards-insights/providers/aggregates"
+	"github.com/qonto/standards-insights/rules"
 	"github.com/spf13/cobra"
 )
 
-func serverCmd(configPath *string) *cobra.Command { //nolint
+func serverCmd(configPath *string) *cobra.Command {
 	provider := ""
 	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "Run server",
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: fix me
-			fmt.Println("Not implemented yet")
+			config, err := config.New(*configPath)
+			exit(err)
+			logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+			registry, ok := prometheus.DefaultRegisterer.(*prometheus.Registry)
+			if !ok {
+				exit(errors.New("fail to use the Prometheus default registerer"))
+			}
+			server, err := http.New(registry, logger, config.HTTP)
+			exit(err)
+
+			signals := make(chan os.Signal, 1)
+			errChan := make(chan error)
+			signal.Notify(
+				signals,
+				syscall.SIGINT,
+				syscall.SIGTERM)
+			projectMetrics, err := metrics.New(registry, config.Labels)
+			exit(err)
+			err = server.Start()
+			exit(err)
+
+			dir, err := os.Getwd()
+			exit(err)
+
+			ruler := rules.NewRuler(config.Rules)
+			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
+			projects := []aggregates.Project{
+				{
+					Path: ".",
+					Name: filepath.Base(dir),
+				},
+			}
+
+			daemon := daemon.New(checker, projects, projectMetrics, logger, (time.Duration(config.Interval) * time.Second))
+			daemon.Start()
+
+			go func() {
+				for sig := range signals {
+					switch sig {
+					case syscall.SIGINT, syscall.SIGTERM:
+						logger.Info(fmt.Sprintf("Received signal %s, shutdown", sig))
+						signal.Stop(signals)
+						daemon.Stop()
+						err := server.Stop()
+						if err != nil {
+							logger.Error(fmt.Sprintf("Fail to stop: %s", err.Error()))
+							errChan <- err
+						}
+						errChan <- nil
+					}
+				}
+			}()
+
+			exitErr := <-errChan
+			exit(exitErr)
+			os.Exit(0)
 		},
 	}
 
