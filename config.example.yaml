@@ -1,6 +1,14 @@
 http:
   host: 127.0.0.1
   port: 3002
+  write-timeout: 10
+  read-timeout: 10
+  read-header-timeout: 10
+  cert-path: "/tmp/cert.pem"
+  key-path: "/tmp/key/key"
+  ca-cert-path: "/tmp/cacert.pem"
+  insecure-skip-verify: false
+  client-auth-type: "RequireAndVerifyClientCert"
 
 labels:
   - category

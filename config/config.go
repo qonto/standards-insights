@@ -15,7 +15,7 @@ type Config struct {
 	Checks    []checkstypes.Check
 	Rules     []rulestypes.Rule
 	Labels    []string
-	Interval  string
+	Interval  int
 }
 
 type ProvidersConfig struct {

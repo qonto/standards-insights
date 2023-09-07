@@ -61,10 +61,7 @@ func serverCmd(configPath *string) *cobra.Command {
 				},
 			}
 
-			interval, err := time.ParseDuration(config.Interval)
-			exit(err)
-
-			daemon := daemon.New(checker, projects, projectMetrics, logger, interval)
+			daemon := daemon.New(checker, projects, projectMetrics, logger, (time.Duration(config.Interval) * time.Second))
 			daemon.Start()
 
 			go func() {
