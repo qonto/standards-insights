@@ -5,6 +5,8 @@ type Provider interface {
 }
 
 type Project struct {
-	Path string
-	Name string
+	Name   string
+	URL    string
+	Branch string
+	Path   string
 }
