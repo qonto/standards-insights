@@ -37,6 +37,28 @@ func executeFileRule(_ context.Context, fileRule aggregates.FileRule, project pr
 
 		return fmt.Errorf("pattern %s not found in file %s", fileRule.Contains, fileRule.Path)
 	}
+	if fileRule.NotContains != nil {
+		file, err := os.Open(path) //nolint
+		if err != nil {
+			return fmt.Errorf("fail to read file %s: %w", fileRule.Path, err)
+		}
+		defer file.Close() //nolint
+
+		scanner := bufio.NewScanner(file)
+
+		for scanner.Scan() {
+			line := scanner.Bytes()
+			if fileRule.NotContains.Regexp.Match(line) {
+				return fmt.Errorf("pattern %s found in file %s", fileRule.NotContains, fileRule.Path)
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			return fmt.Errorf("error while reading file %s: %w", fileRule.Path, err)
+		}
+
+		return nil
+	}
 	if fileRule.Exists != nil {
 		exists := *fileRule.Exists
 		_, err := os.Stat(path)

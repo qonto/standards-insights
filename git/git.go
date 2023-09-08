@@ -111,7 +111,7 @@ func (g *Git) Pull(path string, ref string) error {
 		}
 	}
 	err = worktree.Pull(options)
-	if err != nil && errors.Is(err, git.NoErrAlreadyUpToDate) {
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
 	}
 	return nil
