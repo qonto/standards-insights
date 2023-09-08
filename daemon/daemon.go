@@ -46,32 +46,37 @@ func New(checker *checks.Checker, projects []aggregates.Project, projectMetrics 
 	}
 }
 
+func (d *Daemon) tick() {
+	d.logger.Debug("computing projects metrics")
+	var err error
+	for _, project := range d.projects {
+		err = d.cloneOrPull(project)
+		if err != nil {
+			d.logger.Error(err.Error())
+			break
+			// abort if failure
+			// TODO clean
+		}
+	}
+	if err == nil {
+		results := d.checker.Run(context.Background(), d.projects)
+		d.projectMetrics.LoadProjectsMetrics(results)
+		d.logger.Debug("metrics computed")
+	}
+}
+
 func (d *Daemon) Start() {
 	d.logger.Info("starting daemon")
 	ticker := time.NewTicker(d.interval)
 	d.ticker = ticker
 	go func() {
+		d.tick()
 		for {
 			select {
 			case <-d.done:
 				return
 			case <-ticker.C:
-				d.logger.Debug("computing projects metrics")
-				var err error
-				for _, project := range d.projects {
-					err = d.cloneOrPull(project)
-					if err != nil {
-						d.logger.Error(err.Error())
-						break
-						// abort if failure
-						// TODO clean
-					}
-				}
-				if err == nil {
-					results := d.checker.Run(context.Background(), d.projects)
-					d.projectMetrics.LoadProjectsMetrics(results)
-					d.logger.Debug("metrics computed")
-				}
+				d.tick()
 			}
 		}
 	}()
