@@ -68,7 +68,7 @@ func New(logger *slog.Logger, config Config) (*Git, error) {
 }
 
 func (g *Git) Clone(url string, ref string, path string) error {
-	g.logger.Debug(fmt.Sprintf("cloning repository %s", url))
+	g.logger.Debug(fmt.Sprintf("cloning repository %s on ref %s", url, ref))
 	options := &git.CloneOptions{
 		URL: url,
 		// Depth:         1, shallow clone
@@ -89,7 +89,7 @@ func (g *Git) Clone(url string, ref string, path string) error {
 }
 
 func (g *Git) Pull(path string, ref string) error {
-	g.logger.Debug(fmt.Sprintf("pulling repository %s ref %s", path, ref))
+	g.logger.Debug(fmt.Sprintf("pulling repository %s on ref %s", path, ref))
 	repository, err := git.PlainOpen(path)
 	if err != nil {
 		return err

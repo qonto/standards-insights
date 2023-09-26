@@ -1,7 +1,9 @@
 package aggregates
 
+import "context"
+
 type Provider interface {
-	FetchProjects() ([]Project, error)
+	FetchProjects(ctx context.Context) ([]Project, error)
 }
 
 type Project struct {

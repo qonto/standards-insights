@@ -17,6 +17,7 @@ import (
 	"github.com/qonto/standards-insights/git"
 	"github.com/qonto/standards-insights/http"
 	"github.com/qonto/standards-insights/metrics"
+	"github.com/qonto/standards-insights/providers"
 	"github.com/qonto/standards-insights/rules"
 	"github.com/spf13/cobra"
 )
@@ -56,8 +57,9 @@ func serverCmd(configPath *string) *cobra.Command {
 			ruler := rules.NewRuler(config.Rules)
 			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
 
-			projects := config.Providers.Static
-			daemon := daemon.New(checker, projects, projectMetrics, logger, (time.Duration(config.Interval) * time.Second), git)
+			providers, err := providers.NewProviders(logger, config.Providers)
+			exit(err)
+			daemon := daemon.New(checker, providers, projectMetrics, logger, (time.Duration(config.Interval) * time.Second), git)
 			daemon.Start()
 
 			go func() {

@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
+	"time"
 
 	"github.com/qonto/standards-insights/checks"
 	"github.com/qonto/standards-insights/config"
@@ -19,10 +22,13 @@ func batchCmd(configPath *string) *cobra.Command {
 		Use:   "batch",
 		Short: "Run checks on all projects",
 		Run: func(cmd *cobra.Command, args []string) {
+			var programLevel = new(slog.LevelVar)
+			programLevel.Set(slog.LevelDebug)
+			logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: programLevel}))
 			config, err := config.New(*configPath)
 			exit(err)
 
-			providers, err := providers.NewProviders(&config.Providers, []string{"argocd"})
+			providers, err := providers.NewProviders(logger, config.Providers)
 			exit(err)
 
 			ruler := rules.NewRuler(config.Rules)
@@ -30,7 +36,9 @@ func batchCmd(configPath *string) *cobra.Command {
 			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
 
 			for _, provider := range providers {
-				projects, err := provider.FetchProjects()
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				projects, err := provider.FetchProjects(ctx)
+				cancel()
 				exit(err)
 				fmt.Println("Done!")
 
