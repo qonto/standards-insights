@@ -2,7 +2,7 @@ package argocd
 
 import (
 	"context"
-	"fmt"
+	"path"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient"
 	applicationpkg "github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
@@ -60,7 +60,7 @@ func (c *Client) FetchProjects(ctx context.Context) ([]aggregates.Project, error
 			Name:   app.Name,
 			URL:    app.Spec.Source.RepoURL,
 			Branch: app.Spec.Source.TargetRevision,
-			Path:   fmt.Sprintf("%s/%s", c.config.BasePath, app.Name),
+			Path:   path.Join(c.config.BasePath, app.Name),
 		})
 	}
 	return result, nil
