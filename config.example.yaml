@@ -23,6 +23,13 @@ providers:
       url: https://github.com/foo/bar.git
       branch: "master"
       path: "/tmp/my-service"
+  argocd:
+    url: "argocd-url"
+    projects:
+      - project-to-use
+    selector: "app=foo"
+    base-path: "/tmp/base"
+    # Use ARGOCD_AUTH_TOKEN to pass the ArgoCD authentication token
 
 
 git:

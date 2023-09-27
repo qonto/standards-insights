@@ -12,7 +12,8 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: 1.21
-      - name: lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
-          golangci-lint run --skip-dirs-use-default --timeout 2m0s
+      - uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.54.2
+          args: --timeout=3m
+          skip-cache: false

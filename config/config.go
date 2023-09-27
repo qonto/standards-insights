@@ -29,7 +29,10 @@ type ProvidersConfig struct {
 type GitConfig []string
 
 type ArgoCDConfig struct {
-	URL string
+	URL      string
+	Projects []string
+	Selector string
+	BasePath string `yaml:"base-path"`
 }
 
 func New(path string) (*Config, error) {

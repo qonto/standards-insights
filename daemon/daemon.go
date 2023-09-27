@@ -17,7 +17,7 @@ type Daemon struct {
 	projectMetrics *metrics.Project
 	done           chan bool
 	logger         *slog.Logger
-	projects       []aggregates.Project
+	providers      []aggregates.Provider
 	ticker         *time.Ticker
 	interval       time.Duration
 	git            *git.Git
@@ -34,13 +34,13 @@ func (d *Daemon) cloneOrPull(project aggregates.Project) error {
 	return d.git.Pull(project.Path, project.Branch)
 }
 
-func New(checker *checks.Checker, projects []aggregates.Project, projectMetrics *metrics.Project, logger *slog.Logger, interval time.Duration, git *git.Git) *Daemon {
+func New(checker *checks.Checker, providers []aggregates.Provider, projectMetrics *metrics.Project, logger *slog.Logger, interval time.Duration, git *git.Git) *Daemon {
 	return &Daemon{
 		done:           make(chan bool),
 		checker:        checker,
 		projectMetrics: projectMetrics,
 		logger:         logger,
-		projects:       projects,
+		providers:      providers,
 		interval:       interval,
 		git:            git,
 	}
@@ -49,17 +49,27 @@ func New(checker *checks.Checker, projects []aggregates.Project, projectMetrics 
 func (d *Daemon) tick() {
 	d.logger.Debug("computing projects metrics")
 	var err error
-	for _, project := range d.projects {
-		err = d.cloneOrPull(project)
+	projects := []aggregates.Project{}
+	for _, provider := range d.providers {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		providerProjects, err := provider.FetchProjects(ctx)
+		cancel()
+		// TODO clean + alert
 		if err != nil {
 			d.logger.Error(err.Error())
 			break
-			// abort if failure
-			// TODO clean
 		}
+		for _, project := range providerProjects {
+			err = d.cloneOrPull(project)
+			if err != nil {
+				d.logger.Error(err.Error())
+				break
+			}
+		}
+		projects = append(projects, providerProjects...)
 	}
 	if err == nil {
-		results := d.checker.Run(context.Background(), d.projects)
+		results := d.checker.Run(context.Background(), projects)
 		d.projectMetrics.LoadProjectsMetrics(results)
 		d.logger.Debug("metrics computed")
 	}
