@@ -54,14 +54,14 @@ func (c *Client) FetchProjects(ctx context.Context) ([]aggregates.Project, error
 	if err != nil {
 		return nil, err
 	}
-	result := []aggregates.Project{}
-	for _, app := range apps.Items {
-		result = append(result, aggregates.Project{
+	result := make([]aggregates.Project, len(apps.Items))
+	for i, app := range apps.Items {
+		result[i] = aggregates.Project{
 			Name:   app.Name,
 			URL:    app.Spec.Source.RepoURL,
 			Branch: app.Spec.Source.TargetRevision,
 			Path:   path.Join(c.config.BasePath, app.Name),
-		})
+		}
 	}
 	return result, nil
 }
