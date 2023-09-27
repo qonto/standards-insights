@@ -2,6 +2,7 @@ package argocd
 
 import (
 	"context"
+	"fmt"
 	"path"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient"
@@ -54,6 +55,7 @@ func (c *Client) FetchProjects(ctx context.Context) ([]aggregates.Project, error
 	if err != nil {
 		return nil, err
 	}
+	c.logger.Debug(fmt.Sprintf("found %d ArgoCD projects", len(apps.Items)))
 	result := make([]aggregates.Project, len(apps.Items))
 	for i, app := range apps.Items {
 		result[i] = aggregates.Project{
@@ -61,6 +63,7 @@ func (c *Client) FetchProjects(ctx context.Context) ([]aggregates.Project, error
 			URL:    app.Spec.Source.RepoURL,
 			Branch: app.Spec.Source.TargetRevision,
 			Path:   path.Join(c.config.BasePath, app.Name),
+			Labels: app.Labels,
 		}
 	}
 	return result, nil

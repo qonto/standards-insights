@@ -24,4 +24,5 @@ type Group struct {
 type ProjectResult struct {
 	Name         string
 	CheckResults []CheckResult
+	Labels       map[string]string
 }

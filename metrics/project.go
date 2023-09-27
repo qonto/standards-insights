@@ -32,14 +32,18 @@ func New(registry *prometheus.Registry, extraLabels []string) (*Project, error) 
 
 func (p *Project) LoadProjectsMetrics(results []aggregates.ProjectResult) {
 	for _, project := range results {
+		projectLabels := project.Labels
 		for _, result := range project.CheckResults {
 			labels := prometheus.Labels{"name": result.Name, "project": project.Name}
 			for _, label := range p.extraLabels {
+				labels[label] = ""
 				value, ok := result.Labels[label]
 				if ok {
 					labels[label] = value
-				} else {
-					labels[label] = ""
+				}
+				projectValue, ok := projectLabels[label]
+				if ok {
+					labels[label] = projectValue
 				}
 			}
 			gaugeValue := 0

@@ -11,4 +11,5 @@ type Project struct {
 	URL    string
 	Branch string
 	Path   string
+	Labels map[string]string
 }
