@@ -33,10 +33,8 @@ func NewChecker(ruler Ruler, checks []aggregates.Check, groups []aggregates.Grou
 func (c *Checker) Run(ctx context.Context, projects []providerstypes.Project) []aggregates.ProjectResult {
 	projectResults := make([]aggregates.ProjectResult, len(projects))
 	for i, project := range projects {
-		// TODO
-		// the project should be passed to every layers because the rules should be executed for
-		// each project
 		projectResult := aggregates.ProjectResult{
+			Labels:       project.Labels,
 			Name:         project.Name,
 			CheckResults: []aggregates.CheckResult{},
 		}
