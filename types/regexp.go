@@ -6,6 +6,16 @@ type Regexp struct {
 	*regexp.Regexp
 }
 
+func RegexpFromString(pattern string) (*Regexp, error) {
+	regexp, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	return &Regexp{
+		regexp,
+	}, nil
+}
+
 // UnmarshalText unmarshals json into a regexp.Regexp
 func (r *Regexp) UnmarshalText(b []byte) error {
 	regex, err := regexp.Compile(string(b))

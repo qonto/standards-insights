@@ -52,14 +52,14 @@ checks:
   - name: go-version-latest
     labels:
       category: upgrade
-      level: gold
+      severity: critical
       owner: backend
     rules:
       - go-version-latest
   - name: go-main
     labels:
       category: misc
-      level: bronze
+      severity: minor
       owner: backend
     rules:
       - go-main

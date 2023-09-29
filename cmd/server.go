@@ -8,31 +8,28 @@ import (
 	"syscall"
 	"time"
 
-	"log/slog"
-
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/qonto/standards-insights/checks"
 	"github.com/qonto/standards-insights/config"
-	"github.com/qonto/standards-insights/daemon"
-	"github.com/qonto/standards-insights/git"
-	"github.com/qonto/standards-insights/http"
-	"github.com/qonto/standards-insights/metrics"
-	"github.com/qonto/standards-insights/providers"
-	"github.com/qonto/standards-insights/rules"
+	"github.com/qonto/standards-insights/internal/git"
+	"github.com/qonto/standards-insights/internal/http"
+	"github.com/qonto/standards-insights/internal/metrics"
+	"github.com/qonto/standards-insights/internal/providers"
+	"github.com/qonto/standards-insights/pkg/checker"
+	"github.com/qonto/standards-insights/pkg/daemon"
+	"github.com/qonto/standards-insights/pkg/ruler"
 	"github.com/spf13/cobra"
 )
 
-func serverCmd(configPath *string) *cobra.Command {
+func serverCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 	provider := ""
 	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "Run server",
 		Run: func(cmd *cobra.Command, args []string) {
+			logger := buildLogger(*logLevel, *logFormat)
 			config, err := config.New(*configPath)
 			exit(err)
-			var programLevel = new(slog.LevelVar)
-			programLevel.Set(slog.LevelDebug)
-			logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: programLevel}))
+
 			registry, ok := prometheus.DefaultRegisterer.(*prometheus.Registry)
 			if !ok {
 				exit(errors.New("fail to use the Prometheus default registerer"))
@@ -54,12 +51,16 @@ func serverCmd(configPath *string) *cobra.Command {
 			git, err := git.New(logger, config.Git)
 			exit(err)
 
-			ruler := rules.NewRuler(config.Rules)
-			checker := checks.NewChecker(ruler, config.Checks, config.Groups)
+			ruler := ruler.NewRuler(logger, config.Rules)
+			checker := checker.NewChecker(logger, ruler, config.Checks, config.Groups)
 
 			providers, err := providers.NewProviders(logger, config.Providers)
 			exit(err)
-			daemon := daemon.New(checker, providers, projectMetrics, logger, (time.Duration(config.Interval) * time.Second), git)
+			if config.Interval == 0 {
+				exit(errors.New("the interval configuration is mandatory to run the server"))
+			}
+			daemon, err := daemon.New(checker, providers, projectMetrics, logger, (time.Duration(config.Interval) * time.Second), git, registry)
+			exit(err)
 			daemon.Start()
 
 			go func() {
