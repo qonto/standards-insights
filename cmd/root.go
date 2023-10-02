@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/qonto/standards-insights/pkg/checker/aggregates"
 	"github.com/spf13/cobra"
 )
 
@@ -34,20 +33,6 @@ func Run() error {
 	rootCmd.AddCommand(runCmd(&configPath, &logLevel, &logFormat))
 
 	return rootCmd.Execute()
-}
-
-func stdoutResults(results []aggregates.ProjectResult) {
-	for _, project := range results {
-		fmt.Printf("== Project %s\n", project.Name)
-		for _, result := range project.CheckResults {
-			if result.Success {
-				fmt.Printf("✅ Check %s PASS (labels: %s)\n", result.Name, result.Labels)
-			} else {
-				fmt.Printf("🚨 Check %s FAILED (labels: %s)\n", result.Name, result.Labels)
-				fmt.Printf("🚨 %+v\n", result)
-			}
-		}
-	}
 }
 
 func buildLogger(level string, format string) *slog.Logger {
