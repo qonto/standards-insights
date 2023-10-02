@@ -10,6 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/internal/build"
 	"github.com/qonto/standards-insights/internal/git"
 	"github.com/qonto/standards-insights/internal/http"
 	"github.com/qonto/standards-insights/internal/metrics"
@@ -29,6 +30,8 @@ func serverCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 			logger := buildLogger(*logLevel, *logFormat)
 			config, err := config.New(*configPath)
 			exit(err)
+
+			logger.Info(build.VersionMessage())
 
 			registry, ok := prometheus.DefaultRegisterer.(*prometheus.Registry)
 			if !ok {

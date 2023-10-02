@@ -1,0 +1,102 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "standards-insights.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "standards-insights.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: "standards-insights"
+  selector:
+    matchLabels:
+      {{- include "standards-insights.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml  . | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print .Template.BasePath "/config.yaml") . | sha256sum }}
+      labels:
+        {{- include "standards-insights.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "standards-insights.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      {{- with .Values.volumes }}
+        {{- toYaml  . | nindent 8 }}
+      {{- end }}
+      - name: standards-insights-config
+        configMap:
+          name: {{ include "standards-insights.fullname" . }}
+      - name: standards-insights-repository
+        persistentVolumeClaim:
+          claimName: {{ include "standards-insights.persistentVolumeClaimName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          args:
+            - "server"
+            - "--config"
+            - "{{ .Values.configFilePath }}"
+            - "--log-format"
+            - "{{ .Values.logFormat }}"
+            - "--log-level"
+            - "{{ .Values.logLevel }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- include "standards-insights.env" . | nindent 12 }}
+          {{- with .Values.envFrom }}
+          envFrom:
+            {{- toYaml  . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - mountPath: /repository
+              name: standards-insights-repository
+            - mountPath: /config
+              name: standards-insights-config
+              readOnly: true
+          {{- with .Values.volumeMounts }}
+            {{- toYaml  . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
