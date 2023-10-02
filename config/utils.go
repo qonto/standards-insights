@@ -17,7 +17,7 @@ func getConfigYaml(path string) ([]byte, error) {
 		defer res.Body.Close() //nolint
 
 		if res.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("Request returned: %d", res.StatusCode)
+			return nil, fmt.Errorf("fail to fetch configuration. HTTP request returned: %d", res.StatusCode)
 		}
 
 		resBody, err := io.ReadAll(res.Body)
@@ -30,7 +30,7 @@ func getConfigYaml(path string) ([]byte, error) {
 
 	file, err := os.ReadFile(path) //nolint
 	if err != nil {
-		return nil, fmt.Errorf("Could not find config file: %w", err)
+		return nil, fmt.Errorf("could not find config file: %w", err)
 	}
 
 	return file, nil

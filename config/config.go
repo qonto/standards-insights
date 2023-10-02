@@ -1,38 +1,58 @@
 package config
 
 import (
-	checkstypes "github.com/qonto/standards-insights/checks/aggregates"
-	"github.com/qonto/standards-insights/git"
-	"github.com/qonto/standards-insights/http"
-	providerstypes "github.com/qonto/standards-insights/providers/aggregates"
-	rulestypes "github.com/qonto/standards-insights/rules/aggregates"
+	"github.com/qonto/standards-insights/pkg/project"
+	"github.com/qonto/standards-insights/types"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	HTTP      http.Config
-	Providers ProvidersConfig
-	Groups    []checkstypes.Group
-	Checks    []checkstypes.Check
-	Rules     []rulestypes.Rule
+	HTTP      HTTPConfig      `validate:"omitempty"`
+	Providers ProvidersConfig `validate:"omitempty"`
+	Groups    []Group
+	Checks    []Check
+	Rules     []Rule
 	Labels    []string
 	Interval  int
-	Git       git.Config
+	Git       GitConfig
 }
 
 type ProvidersConfig struct {
-	ArgoCD ArgoCDConfig
-	Static []providerstypes.Project
+	ArgoCD ArgoCDConfig      `validate:"omitempty"`
+	Static []project.Project `validate:"omitempty"`
 }
 
-type GitConfig []string
-
 type ArgoCDConfig struct {
-	URL      string
+	URL      string `validate:"required"`
 	Projects []string
 	Selector string
 	BasePath string `yaml:"base-path"`
+}
+
+type Rule struct {
+	Name   string `validate:"required"`
+	Files  []FileRule
+	Simple *bool
+}
+
+type FileRule struct {
+	Path        string `validate:"required"`
+	Contains    *types.Regexp
+	NotContains *types.Regexp `yaml:"not-contains"`
+	Exists      *bool
+}
+
+type Check struct {
+	Name   string `validate:"required"`
+	Labels map[string]string
+	Rules  []string `validate:"required,min=1"`
+}
+
+type Group struct {
+	Name   string   `validate:"required"`
+	Checks []string `validate:"required,min=1"`
+	When   []string
 }
 
 func New(path string) (*Config, error) {
@@ -47,6 +67,9 @@ func New(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	err = validate(config)
+	if err != nil {
+		return nil, err
+	}
 	return &config, nil
 }
