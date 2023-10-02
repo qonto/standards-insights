@@ -22,9 +22,3 @@ EXPOSE 3000
 
 ENTRYPOINT ["./standards-insights"]
 
-
-
-
-
-
-

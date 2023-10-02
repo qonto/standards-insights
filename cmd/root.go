@@ -20,7 +20,7 @@ func Run() error {
 	logLevel := ""
 	logFormat := ""
 	rootCmd := &cobra.Command{
-		Use:   "qstandards",
+		Use:   "standards",
 		Short: "Standard insights",
 	}
 
