@@ -64,6 +64,6 @@ jobs:
 
       - name: Helm release
         run: |
-          RELEASE_VERSION=$(shell jq .tag dist/metadata.json)
-          ./scripts/helm-release.sh standards-insights chart $(RELEASE_VERSION) qonto
+          RELEASE_VERSION=$(jq -r .tag dist/metadata.json)
+          ./scripts/helm-release.sh standards-insights-chart chart ${RELEASE_VERSION} qonto
 

@@ -81,7 +81,7 @@ dockers:
     - "{{ .Env.DOCKER_REGISTRY }}/{{ .Env.DOCKER_IMAGE_NAME }}:v{{ .Major }}-amd64"
     - "{{ .Env.DOCKER_REGISTRY }}/{{ .Env.DOCKER_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}-amd64"
     - "{{ .Env.DOCKER_REGISTRY }}/{{ .Env.DOCKER_IMAGE_NAME }}:latest-amd64"
-  dockerfile: configs/goreleaser/Dockerfile
+  dockerfile: Dockerfile
   build_flag_templates:
   - --label=org.opencontainers.image.title={{ .ProjectName }}
   - --label=org.opencontainers.image.description={{ .ProjectName }}
@@ -99,7 +99,7 @@ dockers:
     - "{{ .Env.DOCKER_REGISTRY }}/{{ .Env.DOCKER_IMAGE_NAME }}:v{{ .Major }}-arm64"
     - "{{ .Env.DOCKER_REGISTRY }}/{{ .Env.DOCKER_IMAGE_NAME }}:v{{ .Major }}.{{ .Minor }}-arm64"
     - "{{ .Env.DOCKER_REGISTRY }}/{{ .Env.DOCKER_IMAGE_NAME }}:latest-arm64"
-  dockerfile: configs/goreleaser/Dockerfile
+  dockerfile: Dockerfile
   build_flag_templates:
   - --label=org.opencontainers.image.title={{ .ProjectName }}
   - --label=org.opencontainers.image.description={{ .ProjectName }}

@@ -1,24 +1,21 @@
-FROM golang:1.21.1-bullseye as builder
+FROM alpine:3.18
 
-WORKDIR /src
-
-ADD . .
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
-
-# Final Docker image
-FROM alpine:3.18 AS final-stage
+ARG HOME=/app
 
 RUN apk add --update --no-cache ca-certificates
-# Create user validation
-RUN addgroup -S standards && adduser -u 1234 -S standards -G standards
-# must be numeric to work with Pod Security Policies:
-# https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups
-USER 1234
-WORKDIR ${HOME}/app
-COPY --from=builder /src/standards-insights .
+
+RUN addgroup -g 10001 -S standards \
+    && adduser --home ${HOME} -u 10001 -S standards -G standards \
+    && mkdir -p /app \
+    && chown standards:standards -R /app
+
+WORKDIR $HOME
+
+USER 10001
+WORKDIR ${HOME}
+COPY standards-insights /app/
 
 EXPOSE 3000
 
-ENTRYPOINT ["./standards-insights"]
+ENTRYPOINT ["/app/standards-insights"]
 

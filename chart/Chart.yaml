@@ -5,7 +5,7 @@ type: application
 version: 0.0.0
 appVersion: 0.0.0
 
-name: standards-insights
+name: standards-insights-chart
 description: Standards Insights Helm chart
 home: https://github.com/qonto/standards-insights
 sources:
