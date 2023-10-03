@@ -1,0 +1,20 @@
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "standards-insights.persistentVolumeClaimName" . }}
+  labels:
+    {{- include "standards-insights.labels" . | nindent 4 }}
+    {{- with .Values.persistentVolumeClaim.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - {{ default "ReadWriteOnce" .accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistentVolumeClaim.storage }}
+  storageClassName: {{ default "standard" .storageClassName }}
+
