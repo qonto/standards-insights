@@ -1,7 +1,7 @@
 # Default values for standards-insights.
 
 image:
-  repository: public.ecr.aws/g1r8z6f4/standards-insights
+  repository: public.ecr.aws/qonto/standards-insights
   pullPolicy: IfNotPresent
   tag: "" # Defined by chart appVersion parameter
 
@@ -63,11 +63,11 @@ serviceMonitor:
   additionalLabels: {}
 
 resources:
-  limits:
-    memory: 1000Mi
-  requests:
-    cpu: 200m
-    memory: 1000Mi
+  # limits:
+  #   memory: 1000Mi
+  # requests:
+  #   cpu: 200m
+  #   memory: 1000Mi
 
 nodeSelector: {}
 
