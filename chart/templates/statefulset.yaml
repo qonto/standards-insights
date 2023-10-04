@@ -20,6 +20,9 @@ spec:
         {{- end }}
         checksum/config: {{ include (print .Template.BasePath "/config.yaml") . | sha256sum }}
       labels:
+        {{- with .Values.podLabels }}
+        {{- toYaml  . | nindent 8 }}
+        {{- end }}
         {{- include "standards-insights.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
