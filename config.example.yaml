@@ -9,6 +9,8 @@ http:
   ca-cert-path: "/tmp/cacert.pem"
   insecure-skip-verify: false
   client-auth-type: "RequireAndVerifyClientCert"
+  # expose the config on /config
+  expose-configuration: false
 
 labels:
   - category

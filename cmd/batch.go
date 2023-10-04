@@ -21,7 +21,7 @@ func batchCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 		Short: "Run checks on all projects",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := buildLogger(*logLevel, *logFormat)
-			config, err := config.New(*configPath)
+			config, _, err := config.New(*configPath)
 			exit(err)
 
 			logger.Info(build.VersionMessage())

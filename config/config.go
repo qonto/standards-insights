@@ -55,21 +55,21 @@ type Group struct {
 	When   []string
 }
 
-func New(path string) (*Config, error) {
+func New(path string) (*Config, []byte, error) {
 	var config Config
 
 	content, err := getConfigYaml(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	err = yaml.Unmarshal(content, &config)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	err = validate(config)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return &config, nil
+	return &config, content, nil
 }
