@@ -17,14 +17,16 @@ import (
 )
 
 type HTTPServer struct {
-	server   *http.Server
-	Router   *chi.Mux
-	logger   *slog.Logger
-	wg       sync.WaitGroup
-	registry *prometheus.Registry
+	server       *http.Server
+	Router       *chi.Mux
+	logger       *slog.Logger
+	wg           sync.WaitGroup
+	registry     *prometheus.Registry
+	exposeConfig bool
+	rawConfig    []byte
 }
 
-func New(registry *prometheus.Registry, logger *slog.Logger, config config.HTTPConfig) (*HTTPServer, error) {
+func New(registry *prometheus.Registry, logger *slog.Logger, config config.HTTPConfig, rawConfig []byte) (*HTTPServer, error) {
 	var defaultTimeout int = 10
 	r := chi.NewRouter()
 	address := fmt.Sprintf("%s:%d", config.Host, config.Port)
@@ -62,10 +64,12 @@ func New(registry *prometheus.Registry, logger *slog.Logger, config config.HTTPC
 	}
 
 	return &HTTPServer{
-		server:   server,
-		Router:   r,
-		logger:   logger,
-		registry: registry,
+		server:       server,
+		Router:       r,
+		logger:       logger,
+		registry:     registry,
+		rawConfig:    rawConfig,
+		exposeConfig: config.ExposeConfiguration,
 	}, nil
 }
 
@@ -73,6 +77,15 @@ func (h *HTTPServer) Start() error {
 	h.logger.Info(fmt.Sprintf("starting HTTP server on %s", h.server.Addr))
 	h.Router.Get("/healthz", Health(h.logger))
 	h.Router.Method(http.MethodGet, "/metrics", promhttp.Handler())
+	if h.exposeConfig {
+		h.Router.Get("/config", func(w http.ResponseWriter, request *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, err := w.Write(h.rawConfig)
+			if err != nil {
+				h.logger.Error(err.Error())
+			}
+		})
+	}
 	go func() {
 		defer h.wg.Done()
 

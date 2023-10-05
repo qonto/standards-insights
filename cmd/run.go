@@ -27,7 +27,7 @@ func runCmd(configPath *string, logLevel, logFormat *string) *cobra.Command {
 
 func RunLocalCheck(configPath, logLevel, logFormat *string) {
 	logger := buildLogger(*logLevel, *logFormat)
-	config, err := config.New(*configPath)
+	config, _, err := config.New(*configPath)
 	exit(err)
 
 	logger.Info(build.VersionMessage())
