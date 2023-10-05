@@ -1,17 +1,20 @@
 http:
   host: 127.0.0.1
   port: 3002
+  # optional timeout configuration
   write-timeout: 10
   read-timeout: 10
   read-header-timeout: 10
+  # optional tls configuration
   cert-path: "/tmp/cert.pem"
   key-path: "/tmp/key/key"
   ca-cert-path: "/tmp/cacert.pem"
   insecure-skip-verify: false
   client-auth-type: "RequireAndVerifyClientCert"
-  # expose the config on /config
+  # expose the configuration file on /config
   expose-configuration: false
 
+# labels to add to the Prometheus metrics exposed by the HTTP server
 labels:
   - category
   - owner
@@ -20,11 +23,17 @@ labels:
 interval: 10
 
 providers:
+  # Static list of projects to check
   static:
-    - name: "my-service"
-      url: https://github.com/foo/bar.git
-      branch: "master"
-      path: "/tmp/my-service"
+  static:
+    - name: "standards-insights"
+      url: https://github.com/qonto/standards-insights.git
+      branch: "main"
+      path: "/tmp/projects/standards-insights"
+      labels:
+        team: sre
+  # The ArgoCD provider will retrieve projects from ArgoCD and use the Spec.Source.RepoURL url to fetch the
+  # projects. ArgoCD applications labels will automatically be added as labels to the project.
   argocd:
     url: "argocd-url"
     projects:
@@ -33,7 +42,7 @@ providers:
     base-path: "/tmp/base"
     # Use ARGOCD_AUTH_TOKEN to pass the ArgoCD authentication token
 
-
+# Optional Git configuration to clone the projects (pick one)
 git:
   basic-auth:
     username: oauth2
