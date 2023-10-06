@@ -1,0 +1,13 @@
+{{- if .Values.config -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "standards-insights.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "standards-insights.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- toYaml .Values.config | nindent 4 }}
+{{- end -}}

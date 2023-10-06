@@ -16,5 +16,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.persistentVolumeClaim.storage }}
-  storageClassName: {{ default "standard" .storageClassName }}
-
+  storageClassName: {{ default "standard" .Values.persistentVolumeClaim.storageClassName }}

@@ -20,6 +20,9 @@ spec:
         {{- end }}
         checksum/config: {{ include (print .Template.BasePath "/config.yaml") . | sha256sum }}
       labels:
+        {{- with .Values.podLabels }}
+        {{- toYaml  . | nindent 8 }}
+        {{- end }}
         {{- include "standards-insights.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
@@ -33,12 +36,12 @@ spec:
       {{- with .Values.volumes }}
         {{- toYaml  . | nindent 8 }}
       {{- end }}
-      - name: standards-insights-config
-        configMap:
-          name: {{ include "standards-insights.fullname" . }}
-      - name: standards-insights-repository
-        persistentVolumeClaim:
-          claimName: {{ include "standards-insights.persistentVolumeClaimName" . }}
+        - name: standards-insights-config
+          configMap:
+            name: {{ include "standards-insights.fullname" . }}
+        - name: standards-insights-repository
+          persistentVolumeClaim:
+            claimName: {{ include "standards-insights.persistentVolumeClaimName" . }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

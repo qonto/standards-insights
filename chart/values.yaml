@@ -28,6 +28,7 @@ persistentVolumeClaim:
   annotations: {}
   name: ""
   storage: "50Gi"
+  storageClassName: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -39,6 +40,7 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
+podLabels: {}
 
 podSecurityContext:
   fsGroup: 10001
