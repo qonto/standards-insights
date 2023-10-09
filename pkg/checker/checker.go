@@ -39,7 +39,7 @@ func NewChecker(logger *slog.Logger, ruler Ruler, checks []config.Check, groups 
 func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggregates.ProjectResult {
 	projectResults := make([]aggregates.ProjectResult, len(projects))
 	for i, project := range projects {
-		c.logger.Info("checking project" + project.Name)
+		c.logger.Info("checking project " + project.Name)
 		projectResult := aggregates.ProjectResult{
 			Labels:       project.Labels,
 			Name:         project.Name,

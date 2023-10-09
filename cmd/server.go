@@ -28,7 +28,7 @@ func serverCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 		Short: "Run server",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := buildLogger(*logLevel, *logFormat)
-			config, err := config.New(*configPath)
+			config, rawConfig, err := config.New(*configPath)
 			exit(err)
 
 			logger.Info(build.VersionMessage())
@@ -37,7 +37,7 @@ func serverCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 			if !ok {
 				exit(errors.New("fail to use the Prometheus default registerer"))
 			}
-			server, err := http.New(registry, logger, config.HTTP)
+			server, err := http.New(registry, logger, config.HTTP, rawConfig)
 			exit(err)
 
 			signals := make(chan os.Signal, 1)
