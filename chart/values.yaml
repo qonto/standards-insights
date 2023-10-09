@@ -1,0 +1,84 @@
+# Default values for standards-insights.
+
+image:
+  repository: public.ecr.aws/qonto/standards-insights
+  pullPolicy: IfNotPresent
+  tag: "" # Defined by chart appVersion parameter
+
+# Define environment variables
+env: {}
+envFrom: {}
+
+logLevel: info
+logFormat: json
+configFilePath: "/config/config.yaml"
+
+# Set additional labels on all resources
+additionalLabels: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+volumeMounts: {}
+volumes: {}
+
+persistentVolumeClaim:
+  create: true
+  annotations: {}
+  name: ""
+  storage: "50Gi"
+  storageClassName: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 10001
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsGroup: 10001
+  runAsUser: 10001
+
+service:
+  type: ClusterIP
+  port: 3000
+
+serviceMonitor:
+  enabled: true
+  interval: 60s
+  scrapeTimeout: 10s
+  additionalLabels: {}
+
+resources:
+  # limits:
+  #   memory: 1000Mi
+  # requests:
+  #   cpu: 200m
+  #   memory: 1000Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+config:
+  http:
+    host: 0.0.0.0
+    port: 3000
+  interval: 3600

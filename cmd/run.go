@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/internal/build"
 	"github.com/qonto/standards-insights/pkg/checker"
 	"github.com/qonto/standards-insights/pkg/project"
 	"github.com/qonto/standards-insights/pkg/ruler"
@@ -26,8 +27,10 @@ func runCmd(configPath *string, logLevel, logFormat *string) *cobra.Command {
 
 func RunLocalCheck(configPath, logLevel, logFormat *string) {
 	logger := buildLogger(*logLevel, *logFormat)
-	config, err := config.New(*configPath)
+	config, _, err := config.New(*configPath)
 	exit(err)
+
+	logger.Info(build.VersionMessage())
 
 	dir, err := os.Getwd()
 	exit(err)

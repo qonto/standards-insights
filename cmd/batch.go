@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/internal/build"
 	"github.com/qonto/standards-insights/internal/providers"
 	"github.com/qonto/standards-insights/pkg/checker"
 	"github.com/qonto/standards-insights/pkg/ruler"
@@ -20,8 +21,10 @@ func batchCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 		Short: "Run checks on all projects",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := buildLogger(*logLevel, *logFormat)
-			config, err := config.New(*configPath)
+			config, _, err := config.New(*configPath)
 			exit(err)
+
+			logger.Info(build.VersionMessage())
 
 			providers, err := providers.NewProviders(logger, config.Providers)
 			exit(err)

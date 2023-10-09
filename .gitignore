@@ -1,3 +1,4 @@
 standards
 standards-insights
-config.yaml
+/config.yaml
+*.tgz
