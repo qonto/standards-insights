@@ -74,6 +74,13 @@ checks:
       owner: backend
     rules:
       - go-main
+  - name: grep-test
+    labels:
+      category: misc
+      severity: minor
+      owner: backend
+    rules:
+      - grep-rule-fn
 
 rules:
   - name: golang-projects
@@ -88,4 +95,10 @@ rules:
     files:
       - path: "main.go"
         contains: "^(func main)"
+  - name: grep-rule-fn
+    grep:
+      - path: "."
+        recursive: true
+        pattern: "NewGrepRule"
+        match: true
 
