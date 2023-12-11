@@ -33,6 +33,7 @@ type ArgoCDConfig struct {
 type Rule struct {
 	Name   string `validate:"required"`
 	Files  []FileRule
+	Grep   []GrepRule
 	Simple *bool
 }
 
@@ -41,6 +42,13 @@ type FileRule struct {
 	Contains    *types.Regexp
 	NotContains *types.Regexp `yaml:"not-contains"`
 	Exists      *bool
+}
+
+type GrepRule struct {
+	Path      string `validate:"required"`
+	Recursive bool
+	Pattern   string `validate:"required"`
+	Match     bool
 }
 
 type Check struct {
