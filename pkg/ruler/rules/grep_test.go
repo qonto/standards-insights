@@ -28,6 +28,15 @@ func TestGrepRule(t *testing.T) {
 		},
 		{
 			rule: rules.GrepRule{
+				Path:         "_testdata",
+				Recursive:    true,
+				Pattern:      "abcdefg",
+				Match:        true,
+				SkipNotFound: true,
+			},
+		},
+		{
+			rule: rules.GrepRule{
 				Path:      "_testdata",
 				Recursive: true,
 				Pattern:   "abc*",
