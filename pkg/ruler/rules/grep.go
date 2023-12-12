@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/qonto/standards-insights/config"
@@ -12,22 +13,29 @@ import (
 )
 
 type GrepRule struct {
-	Path      string
-	Recursive bool
-	Pattern   string
-	Match     bool
+	Path         string
+	Recursive    bool
+	Pattern      string
+	Match        bool
+	SkipNotFound bool
 }
 
 func NewGrepRule(config config.GrepRule) *GrepRule {
 	return &GrepRule{
-		Path:      config.Path,
-		Recursive: config.Recursive,
-		Pattern:   config.Pattern,
-		Match:     config.Match,
+		Path:         config.Path,
+		Recursive:    config.Recursive,
+		Pattern:      config.Pattern,
+		Match:        config.Match,
+		SkipNotFound: config.SkipNotFound,
 	}
 }
 
 func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
+	_, err := os.Stat(project.Path)
+	isNotExist := os.IsNotExist(err)
+	if isNotExist && rule.SkipNotFound {
+		return nil
+	}
 	arguments := []string{}
 	if rule.Recursive {
 		arguments = append(arguments, "-r")
