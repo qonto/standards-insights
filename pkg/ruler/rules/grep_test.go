@@ -28,7 +28,7 @@ func TestGrepRule(t *testing.T) {
 		},
 		{
 			rule: rules.GrepRule{
-				Path:         "_testdata",
+				Path:         "doesnotexist",
 				Recursive:    true,
 				Pattern:      "abcdefg",
 				Match:        true,

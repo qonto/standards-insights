@@ -31,7 +31,7 @@ func NewGrepRule(config config.GrepRule) *GrepRule {
 }
 
 func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
-	_, err := os.Stat(project.Path)
+	_, err := os.Stat(rule.Path)
 	isNotExist := os.IsNotExist(err)
 	if isNotExist && rule.SkipNotFound {
 		return nil
