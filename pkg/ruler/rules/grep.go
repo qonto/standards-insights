@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/pkg/project"
@@ -31,7 +32,8 @@ func NewGrepRule(config config.GrepRule) *GrepRule {
 }
 
 func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
-	_, err := os.Stat(rule.Path)
+	path := filepath.Join(project.Path, rule.Path)
+	_, err := os.Stat(path)
 	isNotExist := os.IsNotExist(err)
 	if isNotExist && rule.SkipNotFound {
 		return nil
@@ -40,7 +42,7 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 	if rule.Recursive {
 		arguments = append(arguments, "-r")
 	}
-	arguments = append(arguments, rule.Pattern, rule.Path)
+	arguments = append(arguments, rule.Pattern, path)
 
 	cmd := exec.CommandContext(ctx, "grep", arguments...) //nolint
 
