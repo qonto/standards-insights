@@ -11,6 +11,6 @@ type BasicAuth struct {
 }
 
 type GitConfig struct {
-	PrivateKey PrivateKey `yaml:"private-key" validate:"omitempty,file"`
+	PrivateKey PrivateKey `yaml:"private-key" validate:"omitempty"`
 	BasicAuth  BasicAuth  `yaml:"basic-auth"`
 }
