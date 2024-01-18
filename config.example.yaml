@@ -25,7 +25,6 @@ interval: 10
 providers:
   # Static list of projects to check
   static:
-  static:
     - name: "standards-insights"
       url: https://github.com/qonto/standards-insights.git
       branch: "main"
@@ -68,12 +67,14 @@ checks:
     rules:
       - go-version-latest
   - name: go-main
+    operator: and
     labels:
       category: misc
       severity: minor
       owner: backend
     rules:
       - go-main
+      - go-version-latest
   - name: grep-test
     labels:
       category: misc
@@ -90,7 +91,7 @@ rules:
   - name: go-version-latest
     files:
       - path: "go.mod"
-        contains: "go 1.20"
+        contains: "go 1.21"
   - name: go-main
     files:
       - path: "main.go"
