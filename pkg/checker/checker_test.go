@@ -41,11 +41,19 @@ func TestRun(t *testing.T) {
 				"category": "cat2",
 			},
 		},
+		{
+			Name:     "check3",
+			Rules:    []string{"rule1", "rule2"},
+			Operator: "or",
+			Labels: map[string]string{
+				"category": "cat3",
+			},
+		},
 	}
 	groups := []config.Group{
 		{
 			Name:   "group1",
-			Checks: []string{"check1", "check2"},
+			Checks: []string{"check1", "check2", "check3"},
 			When:   []string{"rule1"},
 		},
 	}
@@ -64,11 +72,14 @@ func TestRun(t *testing.T) {
 	assert.Equal(t, results[0].Name, "project1")
 	assert.Equal(t, 1, len(results[0].Labels))
 	assert.Equal(t, "sre", results[0].Labels["team"])
-	assert.Equal(t, 2, len(results[0].CheckResults))
+	assert.Equal(t, 3, len(results[0].CheckResults))
 	assert.Equal(t, "check1", results[0].CheckResults[0].Name)
 	assert.Equal(t, "check2", results[0].CheckResults[1].Name)
+	assert.Equal(t, "check3", results[0].CheckResults[2].Name)
 	assert.Equal(t, "cat1", results[0].CheckResults[0].Labels["category"])
 	assert.Equal(t, "cat2", results[0].CheckResults[1].Labels["category"])
+	assert.Equal(t, "cat3", results[0].CheckResults[2].Labels["category"])
 	assert.True(t, results[0].CheckResults[0].Success)
 	assert.False(t, results[0].CheckResults[1].Success)
+	assert.True(t, results[0].CheckResults[2].Success)
 }
