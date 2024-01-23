@@ -46,7 +46,8 @@ func batchCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 				exit(err)
 
 				for _, project := range projects {
-					cloneOrPull(git, project)
+					err := cloneOrPull(git, project)
+					exit(err)
 				}
 				fmt.Println("Done!")
 
