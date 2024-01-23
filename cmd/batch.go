@@ -3,12 +3,15 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/internal/build"
+	"github.com/qonto/standards-insights/internal/git"
 	"github.com/qonto/standards-insights/internal/providers"
 	"github.com/qonto/standards-insights/pkg/checker"
+	"github.com/qonto/standards-insights/pkg/project"
 	"github.com/qonto/standards-insights/pkg/ruler"
 
 	"github.com/spf13/cobra"
@@ -33,11 +36,18 @@ func batchCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 
 			checker := checker.NewChecker(logger, ruler, config.Checks, config.Groups)
 
+			git, err := git.New(logger, config.Git)
+			exit(err)
+
 			for _, provider := range providers {
 				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 				projects, err := provider.FetchProjects(ctx)
 				cancel()
 				exit(err)
+
+				for _, project := range projects {
+					cloneOrPull(git, project)
+				}
 				fmt.Println("Done!")
 
 				results := checker.Run(context.Background(), projects)
@@ -50,4 +60,15 @@ func batchCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&provider, "provider", "p", "", "Filter providers")
 
 	return cmd
+}
+
+func cloneOrPull(git *git.Git, project project.Project) error {
+	_, err := os.Stat(project.Path)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if os.IsNotExist(err) {
+		return git.Clone(project.URL, project.Branch, project.Path)
+	}
+	return git.Pull(project.Path, project.Branch)
 }
