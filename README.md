@@ -40,12 +40,14 @@ rules:
 
 checks:
   - name: go-version-latest
+    operator: and
     labels:
       category: upgrade
       severity: critical
     rules:
       - go-version-latest
   - name: go-main
+    operator: and
     labels:
       category: code-structure
       severity: minor
@@ -71,6 +73,9 @@ Rules modules are documented in the `doc/rules` directory.
 
 We then define `checks` in the configuration. Checks are used to group similar rules together. They can also be configured with optional labels (`category` and `severity` in this example) that we will used later, when Standards Insights is run in `daemon` mode.
 In this example, the two checks contain only one rule each (`go-version-latest` and `go-main`).
+Checks supports 2 different operators to evaluate `rules`: `and` and `or`.
+`and` is the default operator and the check result will be successful if all the rules evaluate to true.
+`or` operator will mark the check as successful if at least one rule evaluates to true.
 
 Finally, we configure `groups`: groups contains checks to execute on a project when a condition is true. In this example, the group named `golang` will only be executed on projects where `golang-project` is valid (so, when the `go.mod` file exists). Thanks to the `when` condition, we can specify which check should be executed on which project.
 

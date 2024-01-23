@@ -53,9 +53,14 @@ type GrepRule struct {
 }
 
 type Check struct {
-	Name   string `validate:"required"`
-	Labels map[string]string
-	Rules  []string `validate:"required,min=1"`
+	Name     string `validate:"required"`
+	Labels   map[string]string
+	Operator string   `validate:"oneof=and or"`
+	Rules    []string `validate:"required,min=1"`
+}
+
+func (c Check) IsAND() bool {
+	return c.Operator == "" || c.Operator == "and"
 }
 
 type Group struct {
