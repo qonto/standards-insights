@@ -46,28 +46,66 @@ func (c *Client) Name() string {
 }
 
 func (c *Client) FetchProjects(ctx context.Context) ([]project.Project, error) {
-	options := &gitlab.ListProjectsOptions{
-		ListOptions: gitlab.ListOptions{PerPage: c.config.Limit},
-	}
-
-	if len(c.config.Topics) > 0 {
-		topic := strings.Join(c.config.Topics, ",")
-		options.Topic = &topic
-	}
-
-	if c.config.Search != "" {
-		options.Search = &c.config.Search
-	}
+	options := makeGitlabListProjectsOptions(c.config)
 
 	c.logger.Debug("fetching Gitlab projects")
-	projects, _, err := c.client.Projects.ListProjects(
-		options,
-	)
+	projects, err := c.listAllProject(options)
 	if err != nil {
 		return nil, err
 	}
 
 	c.logger.Debug(fmt.Sprintf("found %d Gitlab projects", len(projects)))
+
+	return c.makeProjects(projects), nil
+}
+
+func makeGitlabListProjectsOptions(config config.GitlabConfig) *gitlab.ListProjectsOptions {
+	options := &gitlab.ListProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			OrderBy:    "id",
+			Pagination: "keyset",
+			PerPage:    25,
+			Sort:       "asc",
+		},
+	}
+
+	if len(config.Topics) > 0 {
+		topic := strings.Join(config.Topics, ",")
+		options.Topic = &topic
+	}
+
+	if config.Search != "" {
+		options.Search = &config.Search
+	}
+
+	return options
+}
+
+func (c *Client) listAllProject(opts *gitlab.ListProjectsOptions) ([]*gitlab.Project, error) {
+	result := []*gitlab.Project{}
+
+	optionFuncs := []gitlab.RequestOptionFunc{}
+
+	for {
+		ps, resp, err := c.client.Projects.ListProjects(opts, optionFuncs...)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, ps...)
+
+		if resp.NextLink == "" {
+			break
+		}
+
+		optionFuncs = []gitlab.RequestOptionFunc{
+			gitlab.WithKeysetPaginationParameters(resp.NextLink),
+		}
+	}
+	return result, nil
+}
+
+func (c *Client) makeProjects(projects []*gitlab.Project) []project.Project {
 	result := make([]project.Project, len(projects))
 	for i, proj := range projects {
 		labels := make(map[string]string)
@@ -85,5 +123,5 @@ func (c *Client) FetchProjects(ctx context.Context) ([]project.Project, error) {
 			Labels: labels,
 		}
 	}
-	return result, nil
+	return result
 }
