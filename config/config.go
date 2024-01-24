@@ -31,10 +31,10 @@ type ArgoCDConfig struct {
 }
 
 type Rule struct {
-	Name    string     `validate:"required"`
-	Files   []FileRule `validate:"dive"`
-	Grep    []GrepRule `validate:"dive"`
-	Project ProjectRule
+	Name    string        `validate:"required"`
+	Files   []FileRule    `validate:"dive"`
+	Grep    []GrepRule    `validate:"dive"`
+	Project []ProjectRule `validate:"dive"`
 	Simple  *bool
 }
 
@@ -54,8 +54,7 @@ type GrepRule struct {
 }
 
 type ProjectRule struct {
-	Name   string
-	Names  []string `validate:"excluded_with=Name"`
+	Names  []string
 	Labels map[string]string
 	Match  *bool
 }

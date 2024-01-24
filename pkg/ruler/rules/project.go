@@ -24,15 +24,6 @@ func (rule *ProjectRule) Do(ctx context.Context, project project.Project) error 
 		match = *rule.config.Match
 	}
 
-	if rule.config.Name != "" {
-		if match && project.Name != rule.config.Name {
-			return fmt.Errorf("project name %s is not %s", project.Name, rule.config.Name)
-		}
-		if !match && project.Name == rule.config.Name {
-			return fmt.Errorf("project name %s is matching", project.Name)
-		}
-	}
-
 	if len(rule.config.Names) > 0 {
 		if match && !contains(project.Name, rule.config.Names) {
 			return fmt.Errorf("project name %s is not in %v", project.Name, rule.config.Names)

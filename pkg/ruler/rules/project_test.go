@@ -25,41 +25,6 @@ func TestProjectRule_Do(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "project name match",
-			config: config.ProjectRule{
-				Name: "a",
-			},
-			project: project.Project{Name: "a"},
-			wantErr: nil,
-		},
-		{
-			name: "project name does not match",
-			config: config.ProjectRule{
-				Name: "a",
-			},
-			project: project.Project{Name: "c"},
-			wantErr: errors.New("project name c is not a"),
-		},
-		{
-			name: "project name matches and should not",
-			config: config.ProjectRule{
-				Name:  "a",
-				Match: &f,
-			},
-			project: project.Project{Name: "a"},
-			wantErr: errors.New("project name a is matching"),
-		},
-		{
-			name: "project name does not match and should not",
-			config: config.ProjectRule{
-				Name:  "a",
-				Match: &f,
-			},
-			project: project.Project{Name: "c"},
-			wantErr: nil,
-		},
-
-		{
 			name: "project name list match",
 			config: config.ProjectRule{
 				Names: []string{"a", "b", "c"},
