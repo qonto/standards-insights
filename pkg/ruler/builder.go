@@ -28,6 +28,10 @@ func newRule(config config.Rule) *rule {
 	for _, grepConfig := range config.Grep {
 		modules = append(modules, rules.NewGrepRule(grepConfig))
 	}
+	for _, projectConfig := range config.Project {
+		modules = append(modules, rules.NewProjectRule(projectConfig))
+	}
+
 	if config.Simple != nil {
 		value := *config.Simple
 		modules = append(modules, rules.NewSimpleRule(value))
