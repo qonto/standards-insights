@@ -44,7 +44,6 @@ providers:
   gitlab:
     token: # can also use $GITLAB_TOKEN
     url: 'https://gitlab.example.com/api/v4'
-    limit: 10 #limits the number of results
     topics: 
       - gitlab repository topic
     base-path: ./tmp/gitlab
