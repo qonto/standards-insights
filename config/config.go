@@ -35,7 +35,7 @@ type GitlabConfig struct {
 	URL      string `validate:"required"`
 	Token    string
 	Topics   []string
-	Limit    int
+	Limit    int `validate:"lte=50000"`
 	Search   string
 	BasePath string `yaml:"base-path"`
 }
