@@ -10,17 +10,17 @@ import (
 type Config struct {
 	HTTP      HTTPConfig      `validate:"omitempty"`
 	Providers ProvidersConfig `validate:"omitempty"`
-	Groups    []Group
-	Checks    []Check
-	Rules     []Rule
-	Labels    []string
+	Groups    []Group         `validate:"dive"`
+	Checks    []Check         `validate:"dive"`
+	Rules     []Rule          `validate:"dive"`
+	Labels    []string        `validate:"dive"`
 	Interval  int
 	Git       GitConfig
 }
 
 type ProvidersConfig struct {
 	ArgoCD ArgoCDConfig      `validate:"omitempty"`
-	Static []project.Project `validate:"omitempty"`
+	Static []project.Project `validate:"omitempty,dive"`
 	Gitlab GitlabConfig      `validate:"omitempty"`
 }
 
@@ -41,10 +41,11 @@ type GitlabConfig struct {
 }
 
 type Rule struct {
-	Name   string `validate:"required"`
-	Files  []FileRule
-	Grep   []GrepRule
-	Simple *bool
+	Name    string        `validate:"required"`
+	Files   []FileRule    `validate:"dive"`
+	Grep    []GrepRule    `validate:"dive"`
+	Project []ProjectRule `validate:"dive"`
+	Simple  *bool
 }
 
 type FileRule struct {
@@ -62,10 +63,16 @@ type GrepRule struct {
 	SkipNotFound bool `yaml:"skip-not-found"`
 }
 
+type ProjectRule struct {
+	Names  []string
+	Labels map[string]string
+	Match  *bool
+}
+
 type Check struct {
 	Name     string `validate:"required"`
 	Labels   map[string]string
-	Operator string   `validate:"oneof=and or"`
+	Operator string   `validate:"oneof='and' 'or' ''"`
 	Rules    []string `validate:"required,min=1"`
 }
 
@@ -95,5 +102,6 @@ func New(path string) (*Config, []byte, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return &config, content, nil
 }
