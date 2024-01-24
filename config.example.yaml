@@ -102,4 +102,35 @@ rules:
         recursive: true
         pattern: "NewGrepRule"
         match: true
-
+  - name: project-is-awesome
+    project:
+      name: awesome-project
+      match: true
+  - name: project-is-not-awesome
+    project:
+      name: non-awesome-project
+      match: false
+  - name: allowed-projects
+    project:
+      names: 
+      - awesome-project1
+      - awesome-project2
+      match: true
+  - name: excluded-projects
+    project:
+      names: 
+      - bad-project1
+      - bad-project2
+      match: false
+  - name: matching-all-labels
+    project:
+      labels: 
+        team: backend
+        language: golang
+      match: true
+  - name: excluding-all-labels
+    project:
+      names: 
+        team: backend
+        language: golang
+      match: false
