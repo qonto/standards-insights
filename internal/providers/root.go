@@ -20,11 +20,11 @@ func NewProviders(logger *slog.Logger, config config.ProvidersConfig) ([]aggrega
 		result = append(result, argoProvider)
 	}
 	if config.Gitlab.URL != "" {
-		argoProvider, err := gitlab.New(logger, config.Gitlab)
+		gitlabProvider, err := gitlab.New(logger, config.Gitlab)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, argoProvider)
+		result = append(result, gitlabProvider)
 	}
 	if len(config.Static) != 0 {
 		staticProvider := static.New(logger, config.Static)
