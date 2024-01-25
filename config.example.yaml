@@ -41,6 +41,14 @@ providers:
     base-path: "/tmp/base"
     # Use ARGOCD_AUTH_TOKEN to pass the ArgoCD authentication token
 
+  gitlab:
+    token: # can also use $GITLAB_TOKEN
+    url: 'https://gitlab.example.com/api/v4'
+    topics: 
+      - gitlab repository topic
+    base-path: ./tmp/gitlab
+    search: #search projects
+
 # Optional Git configuration to clone the projects (pick one)
 git:
   basic-auth:

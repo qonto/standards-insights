@@ -21,12 +21,21 @@ type Config struct {
 type ProvidersConfig struct {
 	ArgoCD ArgoCDConfig      `validate:"omitempty"`
 	Static []project.Project `validate:"omitempty,dive"`
+	Gitlab GitlabConfig      `validate:"omitempty"`
 }
 
 type ArgoCDConfig struct {
 	URL      string `validate:"required"`
 	Projects []string
 	Selector string
+	BasePath string `yaml:"base-path"`
+}
+
+type GitlabConfig struct {
+	URL      string `validate:"required"`
+	Token    string
+	Topics   []string
+	Search   string
 	BasePath string `yaml:"base-path"`
 }
 
