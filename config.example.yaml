@@ -50,6 +50,12 @@ git:
     path: /home/mcorbin/.ssh/my_ssh_private_key
     password: key-password # you can use GIT_PRIVATE_KEY_PASSWORD
 
+
+
+
+
+
+
 groups:
   - name: golang
     checks:
@@ -103,3 +109,27 @@ rules:
         pattern: "NewGrepRule"
         match: true
 
+  - name: allowed-projects
+    project:
+      - names: 
+          - awesome-project1
+          - awesome-project2
+        match: true
+  - name: excluded-projects
+    project:
+      - names: 
+          - bad-project1
+          - bad-project2
+        match: false
+  - name: matching-all-labels
+    project:
+      - labels: 
+          team: backend
+          language: golang
+        match: true
+  - name: excluding-all-labels
+    project:
+      - names: 
+          team: backend
+          language: golang
+        match: false
