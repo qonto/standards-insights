@@ -62,10 +62,8 @@ func (c *Client) FetchProjects(ctx context.Context) ([]project.Project, error) {
 func makeGitlabListProjectsOptions(config config.GitlabConfig) *gitlab.ListProjectsOptions {
 	options := &gitlab.ListProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			OrderBy:    "id",
-			Pagination: "keyset",
-			PerPage:    25,
-			Sort:       "asc",
+			PerPage: 25,
+			Sort:    "asc",
 		},
 	}
 
@@ -84,23 +82,19 @@ func makeGitlabListProjectsOptions(config config.GitlabConfig) *gitlab.ListProje
 func (c *Client) listAllProject(opts *gitlab.ListProjectsOptions) ([]*gitlab.Project, error) {
 	result := []*gitlab.Project{}
 
-	optionFuncs := []gitlab.RequestOptionFunc{}
-
 	for {
-		ps, resp, err := c.client.Projects.ListProjects(opts, optionFuncs...)
+		ps, resp, err := c.client.Projects.ListProjects(opts)
 		if err != nil {
 			return nil, err
 		}
 
 		result = append(result, ps...)
 
-		if resp.NextLink == "" {
+		if resp.NextPage == 0 {
 			break
 		}
 
-		optionFuncs = []gitlab.RequestOptionFunc{
-			gitlab.WithKeysetPaginationParameters(resp.NextLink),
-		}
+		opts.Page = resp.NextPage
 	}
 	return result, nil
 }
