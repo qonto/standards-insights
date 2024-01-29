@@ -104,9 +104,16 @@ func (c *Client) makeProjects(projects []*gitlab.Project) []project.Project {
 	for i, proj := range projects {
 		labels := make(map[string]string)
 		for _, topic := range proj.Topics {
-			if split := strings.Split(topic, ": "); len(split) > 1 {
-				labels[split[0]] = split[1]
+			split := strings.Split(topic, ":")
+
+			key := strings.Trim(split[0], " ")
+			if len(split) == 1 {
+				labels[key] = "true"
+				continue
 			}
+
+			value := strings.Trim(split[1], " ")
+			labels[key] = value
 		}
 
 		result[i] = project.Project{
