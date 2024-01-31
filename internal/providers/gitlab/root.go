@@ -118,7 +118,7 @@ func (c *Client) makeProjects(projects []*gitlab.Project) []project.Project {
 
 		result[i] = project.Project{
 			Name:   proj.Name,
-			URL:    proj.SSHURLToRepo,
+			URL:    proj.HTTPURLToRepo,
 			Branch: proj.DefaultBranch,
 			Path:   path.Join(c.config.BasePath, proj.PathWithNamespace),
 			Labels: labels,
