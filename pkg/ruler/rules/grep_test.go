@@ -74,6 +74,25 @@ func TestGrepRule(t *testing.T) {
 		},
 		{
 			rule: rules.GrepRule{
+				Path:      "_testdata",
+				Recursive: true,
+				Include:   "file1",
+				Pattern:   "abcdefg",
+				Match:     true,
+			},
+		},
+		{
+			rule: rules.GrepRule{
+				Path:      "_testdata",
+				Recursive: true,
+				Include:   "file2",
+				Pattern:   "abcdefg",
+				Match:     true,
+			},
+			error: "no match for pattern",
+		},
+		{
+			rule: rules.GrepRule{
 				Path:    "_testdata",
 				Pattern: "abcdefg",
 				Match:   true,
