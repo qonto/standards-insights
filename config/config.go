@@ -56,8 +56,9 @@ type FileRule struct {
 
 type GrepRule struct {
 	Path         string `validate:"required"`
-	Recursive    bool
 	Pattern      string `validate:"required"`
+	Include      string
+	Recursive    bool
 	Match        bool
 	SkipNotFound bool `yaml:"skip-not-found"`
 }
