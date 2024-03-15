@@ -65,6 +65,7 @@ func makeGitlabListProjectsOptions(config config.GitlabConfig) *gitlab.ListProje
 			PerPage: 25,
 			Sort:    "asc",
 		},
+		IncludePendingDelete: gitlab.Ptr(false),
 	}
 
 	if len(config.Topics) > 0 {
