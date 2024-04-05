@@ -14,6 +14,15 @@ It also supports automatic discovery of projects to check. For example, if you'r
 - A Docker Image is available on [ECR](https://gallery.ecr.aws/qonto/standards-insights).
 - An Helm chart is available on [ECR](https://gallery.ecr.aws/qonto/standards-insights-chart). You should use `ociA://public.ecr.aws/qonto` as repository in Helm in order to fetch it. The supported values are listed in the `chart/values.yaml` file.
 
+### Release
+
+To create a new project release, just create and push a tag:
+
+```
+git tag -a <version>
+git push --tags
+```
+
 ### Configuration
 
 Standards Insights is configured through a yaml configuration file. The `config.example.yaml` file is a commented example of the available options.
