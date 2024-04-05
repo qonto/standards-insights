@@ -2,7 +2,7 @@ FROM alpine:3.19
 
 ARG HOME=/app
 
-RUN apk add --update --no-cache ca-certificates
+RUN apk add --update --no-cache ca-certificates grep
 
 RUN addgroup -g 10001 -S standards \
     && adduser --home ${HOME} -u 10001 -S standards -G standards \
