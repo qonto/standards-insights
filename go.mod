@@ -32,7 +32,7 @@ replace (
 
 require (
 	github.com/argoproj/argo-cd/v2 v2.9.10
-	github.com/go-chi/chi/v5 v5.0.10
+	github.com/go-chi/chi/v5 v5.0.13
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/prometheus/client_golang v1.16.0
