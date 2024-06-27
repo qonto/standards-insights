@@ -14,22 +14,24 @@ import (
 )
 
 type GrepRule struct {
-	Path         string
-	Include      string
-	Pattern      string
-	Recursive    bool
-	Match        bool
-	SkipNotFound bool
+	Path           string
+	Include        string
+	Pattern        string
+	ExtendedRegexp bool
+	Recursive      bool
+	Match          bool
+	SkipNotFound   bool
 }
 
 func NewGrepRule(config config.GrepRule) *GrepRule {
 	return &GrepRule{
-		Path:         config.Path,
-		Recursive:    config.Recursive,
-		Pattern:      config.Pattern,
-		Include:      config.Include,
-		Match:        config.Match,
-		SkipNotFound: config.SkipNotFound,
+		Path:           config.Path,
+		Recursive:      config.Recursive,
+		Pattern:        config.Pattern,
+		ExtendedRegexp: config.ExtendedRegexp,
+		Include:        config.Include,
+		Match:          config.Match,
+		SkipNotFound:   config.SkipNotFound,
 	}
 }
 
@@ -46,6 +48,9 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 	}
 	if rule.Include != "" {
 		arguments = append(arguments, "--include", rule.Include)
+	}
+	if rule.ExtendedRegexp {
+		arguments = append(arguments, "--extended-regexp")
 	}
 	arguments = append(arguments, rule.Pattern, path)
 
