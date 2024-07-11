@@ -2,12 +2,14 @@ package argocd
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 
-	"github.com/argoproj/argo-cd/v2/pkg/apiclient"
-	applicationpkg "github.com/argoproj/argo-cd/v2/pkg/apiclient/application"
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/pkg/project"
 
@@ -16,20 +18,41 @@ import (
 
 type Client struct {
 	config config.ArgoCDConfig
-	client apiclient.Client
+	token  string
+	client *http.Client
 	logger *slog.Logger
 }
 
-func New(logger *slog.Logger, config config.ArgoCDConfig) (*Client, error) {
-	clientConfig := apiclient.ClientOptions{
-		ServerAddr: config.URL,
-	}
+type argocdSource struct {
+	RepoURL        string
+	TargetRevision string
+}
 
-	client, err := apiclient.NewClient(&clientConfig)
-	if err != nil {
-		return nil, err
+type argocdSpec struct {
+	Source argocdSource
+}
+
+type argocdMetadata struct {
+	Labels map[string]string
+	Name   string
+}
+
+type argocdApplication struct {
+	Metadata argocdMetadata
+	Spec     argocdSpec
+}
+
+type argocdListResponse struct {
+	Items []argocdApplication
+}
+
+func New(logger *slog.Logger, config config.ArgoCDConfig) (*Client, error) {
+	client := &http.Client{}
+	token := os.Getenv("ARGOCD_AUTH_TOKEN")
+	if token == "" {
+		return nil, errors.New("You need to set the ARGOCD_AUTH_TOKEN environment variable")
 	}
-	err = os.Unsetenv("ARGOCD_AUTH_TOKEN")
+	err := os.Unsetenv("ARGOCD_AUTH_TOKEN")
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +61,7 @@ func New(logger *slog.Logger, config config.ArgoCDConfig) (*Client, error) {
 		client: client,
 		config: config,
 		logger: logger,
+		token:  token,
 	}, nil
 }
 
@@ -46,32 +70,51 @@ func (c *Client) Name() string {
 }
 
 func (c *Client) FetchProjects(ctx context.Context) ([]project.Project, error) {
-	c.logger.Debug("fetching ArgoCD projects")
-	conn, appClient, err := c.client.NewApplicationClient()
+	c.logger.Debug("fetching ArgoCD applications")
+
+	url, err := url.JoinPath(c.config.URL, "/api/v1/applications")
+	if err != nil {
+		return nil, fmt.Errorf("fail to build argocd url: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close() //nolint
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
 
-	query := &applicationpkg.ApplicationQuery{
-		Projects: c.config.Projects,
+	q := req.URL.Query()
+	for _, project := range c.config.Projects {
+		q.Add("projects", project)
 	}
 	if c.config.Selector != "" {
-		query.Selector = &c.config.Selector
+		q.Add("selector", c.config.Selector)
 	}
-	apps, err := appClient.List(ctx, query)
+	req.URL.RawQuery = q.Encode()
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	c.logger.Debug(fmt.Sprintf("found %d ArgoCD projects", len(apps.Items)))
+	defer resp.Body.Close() //nolint
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("fail to list ArgoCD applications: status %d", resp.StatusCode)
+	}
+
+	var apps argocdListResponse
+	err = json.NewDecoder(resp.Body).Decode(&apps)
+	if err != nil {
+		return nil, err
+	}
+
+	c.logger.Debug(fmt.Sprintf("found %d ArgoCD applications", len(apps.Items)))
 	result := make([]project.Project, len(apps.Items))
 	for i, app := range apps.Items {
 		result[i] = project.Project{
-			Name:   app.Name,
+			Name:   app.Metadata.Name,
 			URL:    app.Spec.Source.RepoURL,
 			Branch: app.Spec.Source.TargetRevision,
-			Path:   path.Join(c.config.BasePath, app.Name),
-			Labels: app.Labels,
+			Path:   path.Join(c.config.BasePath, app.Metadata.Name),
+			Labels: app.Metadata.Labels,
 		}
 	}
 	return result, nil
