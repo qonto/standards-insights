@@ -43,6 +43,7 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 		projectResult := aggregates.ProjectResult{
 			Labels:       project.Labels,
 			Name:         project.Name,
+			Subproject:   project.SubProject,
 			CheckResults: []aggregates.CheckResult{},
 		}
 		for _, group := range c.groups {

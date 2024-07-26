@@ -38,7 +38,7 @@ func NewGrepRule(config config.GrepRule) *GrepRule {
 }
 
 func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
-	path := filepath.Join(project.Path, rule.Path)
+	path := filepath.Join(project.Path, project.SubProject, rule.Path)
 	_, err := os.Stat(path)
 	isNotExist := os.IsNotExist(err)
 	if isNotExist && rule.SkipNotFound {
@@ -75,7 +75,7 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 				return nil
 			}
 			if exitCode == 1 && rule.Match {
-				return fmt.Errorf("no match for pattern %s on path %s", rule.Pattern, rule.Path)
+				return fmt.Errorf("no match for pattern %s on path %s", rule.Pattern, filepath.Join(project.SubProject, rule.Path))
 			}
 			return fmt.Errorf("failed to execute grep command (error code %d), stderr=%s, error=%w", exitErr.ExitCode(), stdErrBuffer.String(), err)
 		}
