@@ -105,17 +105,36 @@ func (d *Daemon) tick() {
 			continue
 		}
 		d.providerRequestsCounter.WithLabelValues(providerName, "success").Inc()
-		for _, project := range providerProjects {
-			err = d.cloneOrPull(project)
+		for _, proj := range providerProjects {
+			err = d.cloneOrPull(proj)
 			if err != nil {
-				d.logger.Error(fmt.Sprintf("fail to retrieve project %s: %s", project.Name, err.Error()))
+				d.logger.Error(fmt.Sprintf("fail to retrieve project %s: %s", proj.Name, err.Error()))
 				d.gitRequestsCounter.WithLabelValues("failure").Inc()
 				continue
 			}
 			d.gitRequestsCounter.WithLabelValues("success").Inc()
+
+			labels := make(map[string]string)
+			for k, v := range proj.Labels {
+				labels[k] = v
+			}
+			labels["team"] = "bookkeeping"
+			subProject := project.Project{
+				Name:       proj.Name,
+				URL:        proj.URL,
+				Branch:     proj.Branch,
+				Path:       proj.Path,
+				SubProject: "app/announcers/attachment_announcer.rb",
+				Labels:     labels,
+			}
+			projects = append(projects, subProject)
+
 		}
 		projects = append(projects, providerProjects...)
+
 	}
+
+	d.logger.Info(fmt.Sprintf("projects: %+v", projects))
 
 	results := d.checker.Run(context.Background(), projects)
 	d.metrics.Load(results)

@@ -55,7 +55,7 @@ type FileRule struct {
 }
 
 type GrepRule struct {
-	Path           string `validate:"required"`
+	Path           string
 	Pattern        string `validate:"required"`
 	Include        string
 	ExtendedRegexp bool `yaml:"extended-regexp"`
