@@ -145,6 +145,29 @@ func TestGrepRule(t *testing.T) {
 			},
 			error: "match found for pattern",
 		},
+		{
+			rule: rules.GrepRule{
+				Path:           "_testdata",
+				Recursive:      true,
+				Include:        "file1",
+				Pattern:        "azerty.*[[:space:]]+<3_go",
+				ExtendedRegexp: true,
+				Match:          true,
+				NullData:       false,
+			},
+			error: "no match for pattern",
+		},
+		{
+			rule: rules.GrepRule{
+				Path:           "_testdata",
+				Recursive:      true,
+				Include:        "file1",
+				Pattern:        "azerty.*[[:space:]]+<3_go",
+				ExtendedRegexp: true,
+				Match:          true,
+				NullData:       true,
+			},
+		},
 	}
 	for _, c := range cases {
 		err := c.rule.Do(context.Background(), project)

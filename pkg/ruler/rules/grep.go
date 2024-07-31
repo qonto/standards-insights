@@ -21,6 +21,7 @@ type GrepRule struct {
 	Recursive      bool
 	Match          bool
 	SkipNotFound   bool
+	NullData       bool
 }
 
 func NewGrepRule(config config.GrepRule) *GrepRule {
@@ -32,6 +33,7 @@ func NewGrepRule(config config.GrepRule) *GrepRule {
 		Include:        config.Include,
 		Match:          config.Match,
 		SkipNotFound:   config.SkipNotFound,
+		NullData:       config.NullData,
 	}
 }
 
@@ -51,6 +53,9 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 	}
 	if rule.ExtendedRegexp {
 		arguments = append(arguments, "--extended-regexp")
+	}
+	if rule.NullData {
+		arguments = append(arguments, "-z")
 	}
 	arguments = append(arguments, rule.Pattern, path)
 

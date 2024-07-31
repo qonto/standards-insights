@@ -62,6 +62,7 @@ type GrepRule struct {
 	Recursive      bool
 	Match          bool
 	SkipNotFound   bool `yaml:"skip-not-found"`
+	NullData       bool `yaml:"null-data"`
 }
 
 type ProjectRule struct {

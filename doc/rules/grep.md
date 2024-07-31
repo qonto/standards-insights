@@ -22,3 +22,4 @@ Available options are:
 - `recursive`: recursively search subdirectories listed (grep `-r` option)
 - `match`: if set to true, the module will be successful if the pattern is found. Default to false, where the module will be successful if the pattern is **not** found
 - `extended-regexp`: if set to true, the pattern is treated as an extended regular expression (grep `-E` option)
+- `null-data`: if set to true, treat input data as sequences of lines terminated by a zero-byte instead of a newline. Useful with multi-line matching. (grep `-z` option)
