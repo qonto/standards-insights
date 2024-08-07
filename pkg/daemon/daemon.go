@@ -124,7 +124,7 @@ func (d *Daemon) tick() {
 				URL:        proj.URL,
 				Branch:     proj.Branch,
 				Path:       proj.Path,
-				SubProject: "app/announcers/attachment_announcer.rb",
+				SubProject: "pkg/ruler/ruler.go",
 				Labels:     labels,
 			}
 			projects = append(projects, subProject)

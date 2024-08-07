@@ -6,9 +6,9 @@ http:
   read-timeout: 10
   read-header-timeout: 10
   # optional tls configuration
-  cert-path: "/tmp/cert.pem"
-  key-path: "/tmp/key/key"
-  ca-cert-path: "/tmp/cacert.pem"
+  #cert-path: "/tmp/cert.pem"
+  #key-path: "/tmp/key/key"
+  #ca-cert-path: "/tmp/cacert.pem"
   insecure-skip-verify: false
   client-auth-type: "RequireAndVerifyClientCert"
   # expose the configuration file on /config
@@ -19,6 +19,7 @@ labels:
   - category
   - owner
   - level
+  - team
 
 interval: 10
 
@@ -33,31 +34,30 @@ providers:
         team: sre
   # The ArgoCD provider will retrieve projects from ArgoCD and use the Spec.Source.RepoURL url to fetch the
   # projects. ArgoCD applications labels will automatically be added as labels to the project.
-  argocd:
-    url: "argocd-url"
-    projects:
-      - project-to-use
-    selector: "app=foo"
-    base-path: "/tmp/base"
-    # Use ARGOCD_AUTH_TOKEN to pass the ArgoCD authentication token
-
-  gitlab:
-    token: # can also use $GITLAB_TOKEN
-    url: 'https://gitlab.example.com/api/v4'
-    topics: 
-      - gitlab repository topic
-    base-path: ./tmp/gitlab
-    search: #search projects
+#  argocd:
+#    url: "argocd-url"
+#    projects:
+#      - project-to-use
+#    selector: "app=foo"
+#    base-path: "/tmp/base"
+#    # Use ARGOCD_AUTH_TOKEN to pass the ArgoCD authentication token
+#
+#  gitlab:
+#    token: # can also use $GITLAB_TOKEN
+#    url: 'https://gitlab.example.com/api/v4'
+#    topics:
+#      - gitlab repository topic
+#    base-path: ./tmp/gitlab
+#    search: #search projects
 
 # Optional Git configuration to clone the projects (pick one)
 git:
   basic-auth:
     username: oauth2
-    password: pass # You can use GIT_BASIC_AUTH_PASSWORD as well
-  private-key:
-    path: /home/mcorbin/.ssh/my_ssh_private_key
-    password: key-password # you can use GIT_PRIVATE_KEY_PASSWORD
-
+    password:
+  #private-key:
+    #path: /Users/stefano.celentano/.ssh/id_rsa
+    #password: 
 
 
 
@@ -71,6 +71,11 @@ groups:
       - go-main
     when:
       - golang-projects
+  - name: paseto-group
+    checks:
+      - paseto-migration-check
+    when:
+      - is-subproject
 
 checks:
   - name: go-version-latest
@@ -80,6 +85,13 @@ checks:
       owner: backend
     rules:
       - go-version-latest
+  - name: paseto-migration-check
+    labels:
+      category: upgrade
+      severity: critical
+      owner: backend
+    rules:
+      - paseto-migration-rule   
   - name: go-main
     operator: and
     labels:
@@ -101,11 +113,20 @@ rules:
   - name: golang-projects
     files:
       - path: "go.mod"
-        exists: true
+        exists: true  
   - name: go-version-latest
     files:
       - path: "go.mod"
         contains: "go 1.21"
+  - name: paseto-migration-rule
+    grep:
+      - recursive: false
+        pattern: "log/slog"
+        match: true
+  - name: is-subproject
+    issubproject:
+  - name: is-project
+    isproject:
   - name: go-main
     files:
       - path: "main.go"
@@ -116,7 +137,6 @@ rules:
         recursive: true
         pattern: "NewGrepRule"
         match: true
-
   - name: allowed-projects
     project:
       - names: 
@@ -137,7 +157,7 @@ rules:
         match: true
   - name: excluding-all-labels
     project:
-      - names: 
+      - labels: 
           team: backend
           language: golang
         match: false
