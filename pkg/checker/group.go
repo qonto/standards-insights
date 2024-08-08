@@ -2,7 +2,6 @@ package checker
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/pkg/checker/aggregates"

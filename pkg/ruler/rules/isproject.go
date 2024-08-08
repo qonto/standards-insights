@@ -3,7 +3,6 @@ package rules
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/qonto/standards-insights/pkg/project"
 )

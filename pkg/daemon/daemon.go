@@ -1,10 +1,13 @@
 package daemon
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -48,6 +51,38 @@ func (d *Daemon) cloneOrPull(project project.Project) error {
 		return d.git.Clone(project.URL, project.Branch, project.Path)
 	}
 	return d.git.Pull(project.Path, project.Branch)
+}
+
+func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) {
+	codeownersPath := filepath.Join(projectPath, ".gitlab", "CODEOWNERS")
+	file, err := os.Open(codeownersPath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	pathOwners := make(map[string]string)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			path := parts[0]
+			team := strings.TrimPrefix(parts[1], "@")
+			if _, exists := pathOwners[path]; !exists {
+				pathOwners[path] = team
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return pathOwners, nil
 }
 
 func New(checker Checker,
@@ -114,24 +149,30 @@ func (d *Daemon) tick() {
 			}
 			d.gitRequestsCounter.WithLabelValues("success").Inc()
 
-			labels := make(map[string]string)
-			for k, v := range proj.Labels {
-				labels[k] = v
-			}
-			labels["team"] = "bookkeeping"
-			subProject := project.Project{
-				Name:       proj.Name,
-				URL:        proj.URL,
-				Branch:     proj.Branch,
-				Path:       proj.Path,
-				SubProject: "pkg/ruler/ruler.go",
-				Labels:     labels,
-			}
-			projects = append(projects, subProject)
+			codeownersLabels, err := d.parseCodeowners(proj.Path)
+			if err != nil {
+				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
+			} else {
+				for subProjectPath, team := range codeownersLabels {
+					labels := make(map[string]string)
+					for k, v := range proj.Labels {
+						labels[k] = v
+					}
+					labels["team"] = team
 
+					subProject := project.Project{
+						Name:       proj.Name,
+						URL:        proj.URL,
+						Branch:     proj.Branch,
+						Path:       proj.Path,
+						SubProject: subProjectPath,
+						Labels:     labels,
+					}
+					projects = append(projects, subProject)
+				}
+				projects = append(projects, providerProjects...)
+			}
 		}
-		projects = append(projects, providerProjects...)
-
 	}
 
 	d.logger.Info(fmt.Sprintf("projects: %+v", projects))

@@ -26,10 +26,10 @@ interval: 10
 providers:
   # Static list of projects to check
   static:
-    - name: "standards-insights"
-      url: https://github.com/qonto/standards-insights.git
-      branch: "main"
-      path: "/tmp/projects/standards-insights"
+    - name: "qonto-api"
+      url: https://gitlab.qonto.co/qonto/qonto-api
+      branch: "master"
+      path: "/tmp/projects/qonto-api"
       labels:
         team: sre
   # The ArgoCD provider will retrieve projects from ArgoCD and use the Spec.Source.RepoURL url to fetch the
@@ -76,6 +76,8 @@ groups:
       - paseto-migration-check
     when:
       - is-subproject
+      - ruby-controller
+      - ruby-projects
 
 checks:
   - name: go-version-latest
@@ -110,6 +112,16 @@ checks:
       - grep-rule-fn
 
 rules:
+  - name: ruby-projects
+    files:
+      - path: "Gemfile"
+        exists: true
+  - name: ruby-controller
+    grep:
+      - recursive: false
+        pattern: "class .*<.*Controller"
+        match: true   
+        extended-regexp: true 
   - name: golang-projects
     files:
       - path: "go.mod"
@@ -121,7 +133,7 @@ rules:
   - name: paseto-migration-rule
     grep:
       - recursive: false
-        pattern: "log/slog"
+        pattern: "Concerns::FullPasetoOrJwtAuthentifiable"
         match: true
   - name: is-subproject
     issubproject:
