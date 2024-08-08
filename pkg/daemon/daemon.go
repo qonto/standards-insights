@@ -72,8 +72,31 @@ func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) 
 		if len(parts) >= 2 {
 			path := parts[0]
 			team := strings.TrimPrefix(parts[1], "@")
+			
+			// Add the original path-team mapping
 			if _, exists := pathOwners[path]; !exists {
 				pathOwners[path] = team
+			}
+			
+			// List files under the directory and add them to pathOwners
+			fullPath := filepath.Join(projectPath, path)
+			err := filepath.Walk(fullPath, func(filePath string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if !info.IsDir() {
+					relPath, err := filepath.Rel(projectPath, filePath)
+					if err != nil {
+						return err
+					}
+					if _, exists := pathOwners[relPath]; !exists {
+						pathOwners[relPath] = team
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				d.logger.Warn(fmt.Sprintf("Failed to walk directory %s: %s", path, err.Error()))
 			}
 		}
 	}
@@ -174,8 +197,6 @@ func (d *Daemon) tick() {
 			}
 		}
 	}
-
-	d.logger.Info(fmt.Sprintf("projects: %+v", projects))
 
 	results := d.checker.Run(context.Background(), projects)
 	d.metrics.Load(results)

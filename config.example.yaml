@@ -118,7 +118,7 @@ rules:
         exists: true
   - name: ruby-controller
     grep:
-      - recursive: false
+      - recursive: true
         pattern: "class .*<.*Controller"
         match: true   
         extended-regexp: true 
@@ -132,7 +132,7 @@ rules:
         contains: "go 1.21"
   - name: paseto-migration-rule
     grep:
-      - recursive: false
+      - recursive: true
         pattern: "Concerns::FullPasetoOrJwtAuthentifiable"
         match: true
   - name: is-subproject
