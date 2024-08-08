@@ -78,9 +78,31 @@ func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) 
 				pathOwners[path] = team
 			}
 			
-			// List files under the directory and add them to pathOwners
-			fullPath := filepath.Join(projectPath, path)
-			err := filepath.Walk(fullPath, func(filePath string, info os.FileInfo, err error) error {
+			// Expand paths and add them to pathOwners
+			err := d.expandPaths(projectPath, path, team, pathOwners)
+			if err != nil {
+				d.logger.Warn(fmt.Sprintf("Failed to expand path %s: %s", path, err.Error()))
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return pathOwners, nil
+}
+
+func (d *Daemon) expandPaths(projectPath, pattern string, team string, pathOwners map[string]string) error {
+	// Use Glob to find all matches for the pattern
+	matches, err := filepath.Glob(filepath.Join(projectPath, pattern))
+	if err != nil {
+		return err
+	}
+	for _, match := range matches {
+		if info, err := os.Stat(match); err == nil && info.IsDir() {
+			// Walk through the directory to find all files
+			err := filepath.Walk(match, func(filePath string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
@@ -96,16 +118,20 @@ func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) 
 				return nil
 			})
 			if err != nil {
-				d.logger.Warn(fmt.Sprintf("Failed to walk directory %s: %s", path, err.Error()))
+				return err
+			}
+		} else if info != nil && !info.IsDir() {
+			// If it's a file, add it directly
+			relPath, err := filepath.Rel(projectPath, match)
+			if err != nil {
+				return err
+			}
+			if _, exists := pathOwners[relPath]; !exists {
+				pathOwners[relPath] = team
 			}
 		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return pathOwners, nil
+	return nil
 }
 
 func New(checker Checker,
