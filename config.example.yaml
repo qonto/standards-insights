@@ -32,6 +32,12 @@ providers:
       path: "/tmp/projects/qonto-api"
       labels:
         team: sre
+    - name: "biller"
+      url: https://gitlab.qonto.co/qonto/qonto-biller
+      branch: "master"
+      path: "/tmp/projects/qonto-biller"
+      labels:
+        team: pricing
   # The ArgoCD provider will retrieve projects from ArgoCD and use the Spec.Source.RepoURL url to fetch the
   # projects. ArgoCD applications labels will automatically be added as labels to the project.
 #  argocd:

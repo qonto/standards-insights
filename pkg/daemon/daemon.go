@@ -248,6 +248,23 @@ func (d *Daemon) exploreProjectFiles(projectPath string, codeownersLabels map[st
 					Labels:     labels,
 				}
 				*projects = append(*projects, subProject)
+			} else {
+				// Add the path as a subproject with the same team as the project team
+				labels := make(map[string]string)
+				for k, v := range proj.Labels {
+					labels[k] = v
+				}
+				labels["team"] = proj.Labels["team"] // Assuming team is stored in proj.Labels
+
+				subProject := project.Project{
+					Name:       proj.Name,
+					URL:        proj.URL,
+					Branch:     proj.Branch,
+					Path:       proj.Path,
+					SubProject: relPath,
+					Labels:     labels,
+				}
+				*projects = append(*projects, subProject)
 			}
 		}
 		return nil
