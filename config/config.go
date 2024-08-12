@@ -85,6 +85,7 @@ func (c Check) IsAND() bool {
 type Group struct {
 	Name               string        `validate:"required"`
 	ApplyOnSubProjects bool          `yaml:"apply-on-sub-projects"`
+	SubprojectsPattern string        `yaml:"subprojects-pattern"`
 	Checks             []string      `validate:"required,min=1"`
 	When               []string
 }

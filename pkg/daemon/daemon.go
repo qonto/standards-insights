@@ -203,18 +203,22 @@ func (d *Daemon) tick() {
 			}
 			d.gitRequestsCounter.WithLabelValues("success").Inc()
 
+			// measure time to parse CODEOWNERS
+			start := time.Now()
 			codeownersLabels, err := d.parseCodeowners(proj.Path)
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
 			}
-			
+			d.logger.Info(fmt.Sprintf("Time to parse CODEOWNERS for project %s: %s", proj.Name, time.Since(start)))
 			// Create subprojects based on expanded paths
+			// measure time to explore project files
+			start = time.Now()
 			err = d.exploreProjectFiles(proj.Path, codeownersLabels, proj, &subProjects)
 			proj.SubProjects = subProjects
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to explore project files for %s: %s", proj.Name, err.Error()))
 			}
-			
+			d.logger.Info(fmt.Sprintf("Time to explore project files for project %s: %s", proj.Name, time.Since(start)))
 			projects = append(projects, proj)
 		}
 	}
