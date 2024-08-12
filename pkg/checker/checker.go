@@ -46,7 +46,6 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 			CheckResults: []aggregates.CheckResult{},
 		}
 		for _, group := range c.groups {
-			fmt.Printf("group %+v", group)
 			if c.shouldSkipGroup(ctx, group, project) {
 				c.logger.Info(fmt.Sprintf("skipping group %s for project %s", group.Name, project.Name))
 				continue

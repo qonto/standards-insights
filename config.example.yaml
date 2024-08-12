@@ -38,6 +38,12 @@ providers:
       path: "/tmp/projects/qonto-biller"
       labels:
         team: pricing
+    - name: "memberships"
+      url: https://gitlab.qonto.co/back/memberships
+      branch: "master"
+      path: "/tmp/projects/memberships"
+      labels:
+        team: spend-management        
   # The ArgoCD provider will retrieve projects from ArgoCD and use the Spec.Source.RepoURL url to fetch the
   # projects. ArgoCD applications labels will automatically be added as labels to the project.
 #  argocd:

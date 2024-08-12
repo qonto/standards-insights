@@ -8,15 +8,6 @@ import (
 	"github.com/qonto/standards-insights/pkg/project"
 )
 
-func contains(slice []string, item string) bool {
-    for _, s := range slice {
-        if s == item {
-            return true
-        }
-    }
-    return false
-}
-
 func (c *Checker) shouldSkipGroup(ctx context.Context, group config.Group, project project.Project) bool {
 	for _, rule := range group.When {
 		ruleResult := c.ruler.Execute(ctx, rule, project)
