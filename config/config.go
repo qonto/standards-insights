@@ -83,10 +83,10 @@ func (c Check) IsAND() bool {
 }
 
 type Group struct {
-	Name         string        `validate:"required"`
-	Files        FilesConfig   `yaml:"files"`
-	Checks       []string      `validate:"required,min=1"`
-	When         []string
+	Name   string      `validate:"required"`
+	Files  FilesConfig `yaml:"files"`
+	Checks []string    `validate:"required,min=1"`
+	When   []string
 }
 
 type FilesConfig struct {

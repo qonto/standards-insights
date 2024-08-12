@@ -52,7 +52,7 @@ func validate(config Config) error {
 					}
 				}
 			}
-			
+
 			for _, groupWhen := range group.When {
 				rule, ok := findRuleByName(config.Rules, groupWhen)
 				if !ok {

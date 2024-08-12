@@ -36,7 +36,7 @@ func newRule(config config.Rule) *rule {
 		value := *config.Simple
 		modules = append(modules, rules.NewSimpleRule(value))
 	}
-	
+
 	result.Modules = modules
 	return result
 }
