@@ -11,7 +11,7 @@ type CheckResult struct {
 
 type ProjectResult struct {
 	Name         string
-	Subproject   string
+	FilePath     string
 	CheckResults []CheckResult
 	Labels       map[string]string
 }

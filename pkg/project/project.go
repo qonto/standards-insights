@@ -5,7 +5,7 @@ type Project struct {
 	URL         string
 	Branch      string
 	Path        string
-	SubProject  string
-	SubProjects []Project
+	FilePath    string    // a path to a file within the project
+	SubProjects []Project // a list of subprojects within the project
 	Labels      map[string]string
 }

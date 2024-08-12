@@ -76,12 +76,12 @@ func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) 
 		if len(parts) >= 2 {
 			path := parts[0]
 			team := strings.TrimPrefix(parts[1], "@")
-			
+
 			// Add the original path-team mapping
 			if _, exists := pathOwners[path]; !exists {
 				pathOwners[path] = team
 			}
-			
+
 			// Expand paths and add them to pathOwners
 			err := d.expandPaths(projectPath, path, team, pathOwners)
 			if err != nil {
@@ -249,16 +249,16 @@ func (d *Daemon) exploreProjectFiles(projectPath string, codeownersLabels map[st
 				labels["team"] = team
 
 				subProject := project.Project{
-					Name:       proj.Name,
-					URL:        proj.URL,
-					Branch:     proj.Branch,
-					Path:       proj.Path,
-					SubProject: relPath,
-					Labels:     labels,
+					Name:     proj.Name,
+					URL:      proj.URL,
+					Branch:   proj.Branch,
+					Path:     proj.Path,
+					FilePath: relPath,
+					Labels:   labels,
 				}
 				*projects = append(*projects, subProject)
 			} else {
-				// Add the path as a subproject with the same team as the project team
+				// Add the path with the same team as the project team
 				labels := make(map[string]string)
 				for k, v := range proj.Labels {
 					labels[k] = v
@@ -266,12 +266,12 @@ func (d *Daemon) exploreProjectFiles(projectPath string, codeownersLabels map[st
 				labels["team"] = proj.Labels["team"] // Assuming team is stored in proj.Labels
 
 				subProject := project.Project{
-					Name:       proj.Name,
-					URL:        proj.URL,
-					Branch:     proj.Branch,
-					Path:       proj.Path,
-					SubProject: relPath,
-					Labels:     labels,
+					Name:     proj.Name,
+					URL:      proj.URL,
+					Branch:   proj.Branch,
+					Path:     proj.Path,
+					FilePath: relPath,
+					Labels:   labels,
 				}
 				*projects = append(*projects, subProject)
 			}
