@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"time"
 
 	"log/slog"
 
@@ -48,56 +47,36 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 			CheckResults: []aggregates.CheckResult{},
 		}
 		for _, group := range c.groups {
-			// measure time to skip group
-			start := time.Now()
 			if c.shouldSkipGroup(ctx, group, project) {
-				c.logger.Info(fmt.Sprintf("skipping group %s for project %s", group.Name, project.Name))
+				c.logger.Debug(fmt.Sprintf("skipping group %s for project %s", group.Name, project.Name))
 				continue
 			}
-			c.logger.Info(fmt.Sprintf("time to skip group %s for project %s: %s", group.Name, project.Name, time.Since(start)))
-			// measure time to execute group
-			start = time.Now()
 			checkResults := c.executeGroup(ctx, group, project)
-			c.logger.Info(fmt.Sprintf("time to execute group %s for project %s: %s", group.Name, project.Name, time.Since(start)))
 			projectResult.CheckResults = append(projectResult.CheckResults, checkResults...)
 
 			if group.Files.ApplyToFiles {
 				// use group pattern to filter sub projects
 				filteredSubProjects := filterSubProjects(project.SubProjects, group.Files.FilesPattern)
 				// print group name, project name and apply on sub projects
-				c.logger.Info(fmt.Sprintf("applying group %s for project %s and sub projects", group.Name, project.Name))
-				totalSubProjectExecutionTime := time.Duration(0)
-				totalSkipTime := time.Duration(0) // Initialize total skip time
+				c.logger.Debug(fmt.Sprintf("applying group %s for project %s and sub projects", group.Name, project.Name))
 				for _, subProject := range filteredSubProjects {
-					// measure time to execute group on sub project
-					start := time.Now()
 					if c.shouldSkipGroup(ctx, group, subProject) {
-						skipTime := time.Since(start)
-						totalSkipTime += skipTime // Accumulate skip time
-						c.logger.Info(fmt.Sprintf("skipping group %s for file %s", group.Name, subProject.FilePath))
+						c.logger.Debug(fmt.Sprintf("skipping group %s for file %s", group.Name, subProject.FilePath))
 						continue
 					}
-					skipTime := time.Since(start)
-					totalSkipTime += skipTime // Accumulate skip time
 					subProjectResult := aggregates.ProjectResult{
 						Labels:       subProject.Labels,
 						Name:         subProject.Name,
-						FilePath:   subProject.FilePath,
+						FilePath:     subProject.FilePath,
 						CheckResults: []aggregates.CheckResult{},
 					}
-					// measure time to execute group on sub project
-					start = time.Now()
 					subProjectCheckResults := c.executeGroup(ctx, group, subProject)
-					executionTime := time.Since(start)
-					totalSubProjectExecutionTime += executionTime
 					subProjectResult.CheckResults = append(subProjectResult.CheckResults, subProjectCheckResults...)
 					projectResults = append(projectResults, subProjectResult)
 				}
-				c.logger.Info(fmt.Sprintf("total time to skip group %s across all files for project %s: %s", group.Name, project.Name, totalSkipTime))
-				c.logger.Info(fmt.Sprintf("total time to execute group %s across all files for project %s: %s", group.Name, project.Name, totalSubProjectExecutionTime))
 			}
 		}
-		projectResults = append(projectResults, projectResult)
+		projectResults[0] = projectResult
 	}
 	return projectResults
 }
