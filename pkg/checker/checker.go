@@ -38,23 +38,43 @@ func NewChecker(logger *slog.Logger, ruler Ruler, checks []config.Check, groups 
 
 func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggregates.ProjectResult {
 	projectResults := make([]aggregates.ProjectResult, len(projects))
-	for i, project := range projects {
+	for _, project := range projects {
 		c.logger.Info("checking project " + project.Name)
 		projectResult := aggregates.ProjectResult{
 			Labels:       project.Labels,
 			Name:         project.Name,
-			Subproject:   project.SubProject,
 			CheckResults: []aggregates.CheckResult{},
 		}
 		for _, group := range c.groups {
+			fmt.Printf("group %+v", group)
 			if c.shouldSkipGroup(ctx, group, project) {
-				c.logger.Debug(fmt.Sprintf("skipping group %s for project %s", group.Name, project.Name))
+				c.logger.Info(fmt.Sprintf("skipping group %s for project %s", group.Name, project.Name))
 				continue
 			}
 			checkResults := c.executeGroup(ctx, group, project)
 			projectResult.CheckResults = append(projectResult.CheckResults, checkResults...)
+
+			if group.ApplyOnSubProjects {
+				// print group name, project name and apply on sub projects
+				c.logger.Info(fmt.Sprintf("applying group %s for project %s and sub projects", group.Name, project.Name))
+				for _, subProject := range project.SubProjects {
+					if c.shouldSkipGroup(ctx, group, subProject) {
+						c.logger.Info(fmt.Sprintf("skipping group %s for subproject %s", group.Name, subProject.SubProject))
+						continue
+					}
+					subProjectResult := aggregates.ProjectResult{
+						Labels:       subProject.Labels,
+						Name:         subProject.Name,
+						Subproject:   subProject.SubProject,
+						CheckResults: []aggregates.CheckResult{},
+					}
+					subProjectCheckResults := c.executeGroup(ctx, group, subProject)
+					subProjectResult.CheckResults = append(subProjectResult.CheckResults, subProjectCheckResults...)
+					projectResults = append(projectResults, subProjectResult)
+				}
+			}
 		}
-		projectResults[i] = projectResult
+		projectResults = append(projectResults, projectResult)
 	}
 	return projectResults
 }

@@ -178,6 +178,7 @@ func New(checker Checker,
 func (d *Daemon) tick() {
 	d.logger.Info("checking projects")
 	projects := []project.Project{}
+	subProjects := []project.Project{}
 	for _, provider := range d.providers {
 		providerName := provider.Name()
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -202,31 +203,55 @@ func (d *Daemon) tick() {
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
 			} else {
-				for subProjectPath, team := range codeownersLabels {
-					labels := make(map[string]string)
-					for k, v := range proj.Labels {
-						labels[k] = v
-					}
-					labels["team"] = team
-
-					subProject := project.Project{
-						Name:       proj.Name,
-						URL:        proj.URL,
-						Branch:     proj.Branch,
-						Path:       proj.Path,
-						SubProject: subProjectPath,
-						Labels:     labels,
-					}
-					projects = append(projects, subProject)
+				// Create subprojects based on expanded paths
+				err = d.exploreProjectFiles(proj.Path, codeownersLabels, proj, &subProjects)
+				proj.SubProjects = subProjects
+				if err != nil {
+					d.logger.Warn(fmt.Sprintf("Failed to explore project files for %s: %s", proj.Name, err.Error()))
 				}
-				projects = append(projects, providerProjects...)
 			}
+			projects = append(projects, proj)
 		}
 	}
 
 	results := d.checker.Run(context.Background(), projects)
 	d.metrics.Load(results)
 	d.logger.Info("projects checked")
+}
+
+func (d *Daemon) exploreProjectFiles(projectPath string, codeownersLabels map[string]string, proj project.Project, projects *[]project.Project) error {
+	// Use filepath.Walk to explore all files in the project directory
+	return filepath.Walk(projectPath, func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			relPath, err := filepath.Rel(projectPath, filePath)
+			if err != nil {
+				return err
+			}
+			// Assign team owner based on CODEOWNERS
+			team, exists := codeownersLabels[relPath]
+			if exists {
+				labels := make(map[string]string)
+				for k, v := range proj.Labels {
+					labels[k] = v
+				}
+				labels["team"] = team
+
+				subProject := project.Project{
+					Name:       proj.Name,
+					URL:        proj.URL,
+					Branch:     proj.Branch,
+					Path:       proj.Path,
+					SubProject: relPath,
+					Labels:     labels,
+				}
+				*projects = append(*projects, subProject)
+			}
+		}
+		return nil
+	})
 }
 
 func (d *Daemon) Start() {

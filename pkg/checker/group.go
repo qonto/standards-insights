@@ -18,10 +18,6 @@ func contains(slice []string, item string) bool {
 }
 
 func (c *Checker) shouldSkipGroup(ctx context.Context, group config.Group, project project.Project) bool {
-	// if gruop does not have a rule "is-subproject" in the when slice then add a "is-project" rule, in this way groups won't run on subprojects by default
-	if !contains(group.When, "is-subproject") && !contains(group.When, "is-project") {
-		group.When = append(group.When, "is-project")
-	}
 	for _, rule := range group.When {
 		ruleResult := c.ruler.Execute(ctx, rule, project)
 		if !ruleResult.Success {

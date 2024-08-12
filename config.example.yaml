@@ -66,16 +66,17 @@ git:
 
 groups:
   - name: golang
+    apply-on-sub-projects: false
     checks:
       - go-version-latest
       - go-main
     when:
       - golang-projects
   - name: paseto-group
+    apply-on-sub-projects: true
     checks:
       - paseto-migration-check
     when:
-      - is-subproject
       - ruby-controller
       - ruby-projects
 
@@ -132,7 +133,7 @@ rules:
         contains: "go 1.21"
   - name: paseto-migration-rule
     grep:
-      - recursive: true
+      - recursive: false
         pattern: "Concerns::FullPasetoOrJwtAuthentifiable"
         match: true
   - name: is-subproject
