@@ -84,8 +84,9 @@ groups:
     when:
       - golang-projects
   - name: paseto-group
-    apply-to-files: true
-    files-pattern: "controller.rb"
+    files:
+      apply-to-files: true
+      files-pattern: "controller.rb"
     checks:
       - paseto-migration-check
     when:

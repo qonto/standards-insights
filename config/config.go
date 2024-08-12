@@ -83,11 +83,15 @@ func (c Check) IsAND() bool {
 }
 
 type Group struct {
-	Name               string        `validate:"required"`
-	ApplyToFiles       bool          `yaml:"apply-to-files"`
-	FilesPattern       string        `yaml:"files-pattern"`
-	Checks             []string      `validate:"required,min=1"`
-	When               []string
+	Name         string        `validate:"required"`
+	Files        FilesConfig   `yaml:"files"`
+	Checks       []string      `validate:"required,min=1"`
+	When         []string
+}
+
+type FilesConfig struct {
+	ApplyToFiles bool   `yaml:"apply-to-files"`
+	FilesPattern string `yaml:"files-pattern"`
 }
 
 func New(path string) (*Config, []byte, error) {

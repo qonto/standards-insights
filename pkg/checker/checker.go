@@ -61,9 +61,9 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 			c.logger.Info(fmt.Sprintf("time to execute group %s for project %s: %s", group.Name, project.Name, time.Since(start)))
 			projectResult.CheckResults = append(projectResult.CheckResults, checkResults...)
 
-			if group.ApplyToFiles {
+			if group.Files.ApplyToFiles {
 				// use group pattern to filter sub projects
-				filteredSubProjects := filterSubProjects(project.SubProjects, group.FilesPattern)
+				filteredSubProjects := filterSubProjects(project.SubProjects, group.Files.FilesPattern)
 				// print group name, project name and apply on sub projects
 				c.logger.Info(fmt.Sprintf("applying group %s for project %s and sub projects", group.Name, project.Name))
 				totalSubProjectExecutionTime := time.Duration(0)
