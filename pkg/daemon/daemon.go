@@ -57,6 +57,10 @@ func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) 
 	codeownersPath := filepath.Join(projectPath, ".gitlab", "CODEOWNERS")
 	file, err := os.Open(codeownersPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			// Return an empty map if CODEOWNERS does not exist
+			return make(map[string]string), nil
+		}
 		return nil, err
 	}
 	defer file.Close()
@@ -202,14 +206,15 @@ func (d *Daemon) tick() {
 			codeownersLabels, err := d.parseCodeowners(proj.Path)
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
-			} else {
-				// Create subprojects based on expanded paths
-				err = d.exploreProjectFiles(proj.Path, codeownersLabels, proj, &subProjects)
-				proj.SubProjects = subProjects
-				if err != nil {
-					d.logger.Warn(fmt.Sprintf("Failed to explore project files for %s: %s", proj.Name, err.Error()))
-				}
 			}
+			
+			// Create subprojects based on expanded paths
+			err = d.exploreProjectFiles(proj.Path, codeownersLabels, proj, &subProjects)
+			proj.SubProjects = subProjects
+			if err != nil {
+				d.logger.Warn(fmt.Sprintf("Failed to explore project files for %s: %s", proj.Name, err.Error()))
+			}
+			
 			projects = append(projects, proj)
 		}
 	}
