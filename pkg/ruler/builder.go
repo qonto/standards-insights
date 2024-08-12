@@ -36,15 +36,7 @@ func newRule(config config.Rule) *rule {
 		value := *config.Simple
 		modules = append(modules, rules.NewSimpleRule(value))
 	}
-
-	if config.Name == "is-project" {
-		modules = append(modules, rules.NewIsProjectRule())
-	}
-
-	if config.Name == "is-subproject" {
-		modules = append(modules, rules.NewIsSubProjectRule())
-	}
-
+	
 	result.Modules = modules
 	return result
 }

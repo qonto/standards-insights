@@ -142,10 +142,6 @@ rules:
       - recursive: false
         pattern: "Concerns::FullPasetoOrJwtAuthentifiable"
         match: true
-  - name: is-subproject
-    issubproject:
-  - name: is-project
-    isproject:
   - name: go-main
     files:
       - path: "main.go"
