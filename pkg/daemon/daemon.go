@@ -1,18 +1,17 @@
 package daemon
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qonto/standards-insights/internal/providers/aggregates"
 	checkeraggregates "github.com/qonto/standards-insights/pkg/checker/aggregates"
+	"github.com/qonto/standards-insights/pkg/codeowners"
 	"github.com/qonto/standards-insights/pkg/project"
 )
 
@@ -51,91 +50,6 @@ func (d *Daemon) cloneOrPull(project project.Project) error {
 		return d.git.Clone(project.URL, project.Branch, project.Path)
 	}
 	return d.git.Pull(project.Path, project.Branch)
-}
-
-func (d *Daemon) parseCodeowners(projectPath string) (map[string]string, error) {
-	codeownersPath := filepath.Join(projectPath, ".gitlab", "CODEOWNERS")
-	file, err := os.Open(codeownersPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// Return an empty map if CODEOWNERS does not exist
-			return make(map[string]string), nil
-		}
-		return nil, err
-	}
-	defer file.Close()
-
-	pathOwners := make(map[string]string)
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		parts := strings.Fields(line)
-		if len(parts) >= 2 {
-			path := parts[0]
-			team := strings.TrimPrefix(parts[1], "@")
-
-			// Add the original path-team mapping
-			if _, exists := pathOwners[path]; !exists {
-				pathOwners[path] = team
-			}
-
-			// Expand paths and add them to pathOwners
-			err := d.expandPaths(projectPath, path, team, pathOwners)
-			if err != nil {
-				d.logger.Warn(fmt.Sprintf("Failed to expand path %s: %s", path, err.Error()))
-			}
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return pathOwners, nil
-}
-
-func (d *Daemon) expandPaths(projectPath, pattern string, team string, pathOwners map[string]string) error {
-	// Use Glob to find all matches for the pattern
-	matches, err := filepath.Glob(filepath.Join(projectPath, pattern))
-	if err != nil {
-		return err
-	}
-	for _, match := range matches {
-		if info, err := os.Stat(match); err == nil && info.IsDir() {
-			// Walk through the directory to find all files
-			err := filepath.Walk(match, func(filePath string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if !info.IsDir() {
-					relPath, err := filepath.Rel(projectPath, filePath)
-					if err != nil {
-						return err
-					}
-					if _, exists := pathOwners[relPath]; !exists {
-						pathOwners[relPath] = team
-					}
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		} else if info != nil && !info.IsDir() {
-			// If it's a file, add it directly
-			relPath, err := filepath.Rel(projectPath, match)
-			if err != nil {
-				return err
-			}
-			if _, exists := pathOwners[relPath]; !exists {
-				pathOwners[relPath] = team
-			}
-		}
-	}
-	return nil
 }
 
 func New(checker Checker,
@@ -203,12 +117,12 @@ func (d *Daemon) tick() {
 			}
 			d.gitRequestsCounter.WithLabelValues("success").Inc()
 
-			codeownersLabels, err := d.parseCodeowners(proj.Path)
+			codeowners, err := codeowners.NewCodeowners(proj.Path)
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
 			}
 			// Create subprojects based on expanded paths
-			err = d.exploreProjectFiles(proj.Path, codeownersLabels, proj, &subProjects)
+			err = d.exploreProjectFiles(proj.Path, codeowners, proj, &subProjects)
 			proj.SubProjects = subProjects
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to explore project files for %s: %s", proj.Name, err.Error()))
@@ -222,7 +136,7 @@ func (d *Daemon) tick() {
 	d.logger.Info("projects checked")
 }
 
-func (d *Daemon) exploreProjectFiles(projectPath string, codeownersLabels map[string]string, proj project.Project, projects *[]project.Project) error {
+func (d *Daemon) exploreProjectFiles(projectPath string, codeowners *codeowners.Codeowners, proj project.Project, projects *[]project.Project) error {
 	// Use filepath.Walk to explore all files in the project directory
 	return filepath.Walk(projectPath, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -234,7 +148,7 @@ func (d *Daemon) exploreProjectFiles(projectPath string, codeownersLabels map[st
 				return err
 			}
 			// Assign team owner based on CODEOWNERS
-			team, exists := codeownersLabels[relPath]
+			team, exists := codeowners.GetOwners(relPath)
 			if exists {
 				labels := make(map[string]string)
 				for k, v := range proj.Labels {

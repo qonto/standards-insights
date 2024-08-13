@@ -1,0 +1,8 @@
+### team-cft-bookkeeping
+[CFT-Bookkeeping] @team-cft-bookkeeping
+app/announcers/attachment_announcer.rb @team-cft-bookkeeping
+
+[cft-sepa] @team-cft-sepa
+app/controllers/**/external_transfers_controller.rb @team-cft-sepa
+app/controllers/*/mandates_controller.rb @team-cft-sepa
+app/services/transfers/ @team-cft-sepa
