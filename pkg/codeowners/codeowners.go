@@ -35,8 +35,7 @@ func (c *Codeowners) GetOwners(path string) (string, bool) {
 	}
 
 	// TODO: load ownermap from standard-insights local depoyment file
-	ownerMap := map[string]string{
-	}
+	ownerMap := map[string]string{}
 
 	owner := owners[0]
 	if mappedOwner, found := ownerMap[owner]; found {
