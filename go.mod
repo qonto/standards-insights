@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-playground/validator/v10 v10.22.0
+	github.com/hairyhenderson/go-codeowners v0.5.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
@@ -32,7 +33,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/hairyhenderson/go-codeowners v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
