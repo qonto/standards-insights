@@ -20,11 +20,11 @@ func TestCodeowners_FromFile(t *testing.T) {
 		path     string
 		expected string
 	}{
-		{"app/announcers/attachment_announcer.rb", "bookkeeping"},
-		{"app/controllers/v1/external_transfers_controller.rb", "sepa"},
-		{"app/controllers/somepath/v1/external_transfers_controller.rb", "sepa"},
-		{"app/controllers/anotherpath/mandates_controller.rb", "sepa"},
-		{"app/services/transfers/somefile.rb", "sepa"},
+		{"app/announcers/attachment_announcer.rb", "@team-cft-bookkeeping"},
+		{"app/controllers/v1/external_transfers_controller.rb", "@team-cft-sepa"},
+		{"app/controllers/somepath/v1/external_transfers_controller.rb", "@team-cft-sepa"},
+		{"app/controllers/anotherpath/mandates_controller.rb", "@team-cft-sepa"},
+		{"app/services/transfers/somefile.rb", "@team-cft-sepa"},
 	}
 
 	for _, tt := range tests {
