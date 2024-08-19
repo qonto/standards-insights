@@ -29,8 +29,6 @@ providers:
       url: https://github.com/qonto/standards-insights.git
       branch: "main"
       path: "/tmp/projects/standards-insights"
-      labels:
-        team: sre
   # The ArgoCD provider will retrieve projects from ArgoCD and use the Spec.Source.RepoURL url to fetch the
   # projects. ArgoCD applications labels will automatically be added as labels to the project.
   argocd:
@@ -71,8 +69,22 @@ groups:
       - go-main
     when:
       - golang-projects
+  - name: files-granularity-example
+    files: 
+      apply-to-files: true
+    checks:
+      - files-granularity-example
+    when:
+      - golang-projects
 
 checks:
+  - name: files-granularity-example
+    labels:
+      category: upgrade
+      severity: critical
+      owner: backend
+    rules:
+      - files-granularity-example
   - name: go-version-latest
     labels:
       category: upgrade
@@ -116,7 +128,11 @@ rules:
         recursive: true
         pattern: "NewGrepRule"
         match: true
-
+  - name: files-granularity-example
+    grep:
+      - recursive: false
+        pattern: "package"
+        match: true
   - name: allowed-projects
     project:
       - names: 
@@ -137,7 +153,7 @@ rules:
         match: true
   - name: excluding-all-labels
     project:
-      - names: 
+      - labels: 
           team: backend
           language: golang
         match: false
