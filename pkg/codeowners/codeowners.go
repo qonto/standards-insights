@@ -4,13 +4,15 @@ import (
 	"os"
 
 	"github.com/hairyhenderson/go-codeowners"
+	"github.com/qonto/standards-insights/config"
 )
 
 type Codeowners struct {
 	codeowners *codeowners.Codeowners
+	configPath string
 }
 
-func NewCodeowners(path string) (*Codeowners, error) {
+func NewCodeowners(path string, configPath string) (*Codeowners, error) {
 	// open filesystem rooted at current working directory
 	fsys := os.DirFS(path)
 
@@ -21,6 +23,7 @@ func NewCodeowners(path string) (*Codeowners, error) {
 
 	return &Codeowners{
 		codeowners: c,
+		configPath: configPath,
 	}, nil
 }
 
@@ -34,8 +37,15 @@ func (c *Codeowners) GetOwners(path string) (string, bool) {
 		return "", false
 	}
 
-	// TODO: load ownermap from standard-insights local depoyment file
-	ownerMap := map[string]string{}
+	// Attempt to load the configuration
+	config, _, err := config.New(c.configPath)
+	var ownerMap map[string]string
+	if err != nil {
+		// If config cannot be found, use an empty ownerMap
+		ownerMap = map[string]string{}
+	} else {
+		ownerMap = config.OwnerMap
+	}
 
 	owner := owners[0]
 	if mappedOwner, found := ownerMap[owner]; found {

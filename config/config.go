@@ -16,6 +16,7 @@ type Config struct {
 	Labels    []string        `validate:"dive"`
 	Interval  int
 	Git       GitConfig
+	OwnerMap  map[string]string `yaml:"ownerMap"`
 }
 
 type ProvidersConfig struct {

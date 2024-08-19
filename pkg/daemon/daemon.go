@@ -93,7 +93,7 @@ func New(checker Checker,
 	}, nil
 }
 
-func (d *Daemon) tick() {
+func (d *Daemon) tick(configPath string) {
 	d.logger.Info("checking projects")
 	projects := []project.Project{}
 	subProjects := []project.Project{}
@@ -117,7 +117,7 @@ func (d *Daemon) tick() {
 			}
 			d.gitRequestsCounter.WithLabelValues("success").Inc()
 
-			codeowners, err := codeowners.NewCodeowners(proj.Path)
+			codeowners, err := codeowners.NewCodeowners(proj.Path, configPath)
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
 			}
@@ -188,18 +188,18 @@ func (d *Daemon) exploreProjectFiles(projectPath string, codeowners *codeowners.
 	})
 }
 
-func (d *Daemon) Start() {
+func (d *Daemon) Start(configPath string) {
 	d.logger.Info("starting daemon")
 	ticker := time.NewTicker(d.interval)
 	d.ticker = ticker
 	go func() {
-		d.tick()
+		d.tick(configPath)
 		for {
 			select {
 			case <-d.done:
 				return
 			case <-ticker.C:
-				d.tick()
+				d.tick(configPath)
 			}
 		}
 	}()

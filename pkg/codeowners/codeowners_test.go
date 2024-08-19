@@ -11,7 +11,7 @@ func TestCodeowners_FromFile(t *testing.T) {
 		t.Fatalf("CODEOWNERS file does not exist")
 	}
 
-	co, err := NewCodeowners(".")
+	co, err := NewCodeowners(".", "")
 	if err != nil {
 		t.Fatalf("Error creating codeowners: %v", err)
 	}
