@@ -50,6 +50,9 @@ func validate(config Config) error {
 							return fmt.Errorf("grep rule %s in check %s has path defined but this is not allowed when the group applies to files", rule.Name, check.Name)
 						}
 					}
+					if rule.Files != nil {
+						return fmt.Errorf("file rule %s in check %s is not allowed when the group applies to files", rule.Name, check.Name)
+					}
 				}
 			}
 
