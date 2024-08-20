@@ -12,7 +12,7 @@ type Project struct {
 }
 
 func New(registry *prometheus.Registry, extraLabels []string) (*Project, error) {
-	labels := append([]string{"name", "project"}, extraLabels...)
+	labels := append([]string{"name", "project", "filepath"}, extraLabels...)
 	checksGauge := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "check_result_success",
@@ -34,7 +34,7 @@ func (p *Project) Load(results []aggregates.ProjectResult) {
 	for _, project := range results {
 		projectLabels := project.Labels
 		for _, result := range project.CheckResults {
-			labels := prometheus.Labels{"name": result.Name, "project": project.Name}
+			labels := prometheus.Labels{"name": result.Name, "project": project.Name, "filepath": project.FilePath}
 			for _, label := range p.extraLabels {
 				labels[label] = ""
 				value, ok := result.Labels[label]

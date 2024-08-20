@@ -48,7 +48,7 @@ func (r *Ruler) Execute(ctx context.Context, ruleName string, project project.Pr
 	}
 	if len(errorMessages) > 0 {
 		for _, errorMessage := range errorMessages {
-			r.logger.Error(fmt.Sprintf("error on rule %s for project %s: %s", ruleName, project.Name, errorMessage))
+			r.logger.Debug(fmt.Sprintf("error on rule %s for project %s file %s: %s", ruleName, project.Name, project.FilePath, errorMessage))
 		}
 		return aggregates.RuleResult{
 			Success:  false,

@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qonto/standards-insights/internal/providers/aggregates"
 	checkeraggregates "github.com/qonto/standards-insights/pkg/checker/aggregates"
+	"github.com/qonto/standards-insights/pkg/codeowners"
 	"github.com/qonto/standards-insights/pkg/project"
 )
 
@@ -91,9 +93,10 @@ func New(checker Checker,
 	}, nil
 }
 
-func (d *Daemon) tick() {
+func (d *Daemon) tick(configPath string) {
 	d.logger.Info("checking projects")
 	projects := []project.Project{}
+	subProjects := []project.Project{}
 	for _, provider := range d.providers {
 		providerName := provider.Name()
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -105,16 +108,27 @@ func (d *Daemon) tick() {
 			continue
 		}
 		d.providerRequestsCounter.WithLabelValues(providerName, "success").Inc()
-		for _, project := range providerProjects {
-			err = d.cloneOrPull(project)
+		for _, proj := range providerProjects {
+			err = d.cloneOrPull(proj)
 			if err != nil {
-				d.logger.Error(fmt.Sprintf("fail to retrieve project %s: %s", project.Name, err.Error()))
+				d.logger.Error(fmt.Sprintf("fail to retrieve project %s: %s", proj.Name, err.Error()))
 				d.gitRequestsCounter.WithLabelValues("failure").Inc()
 				continue
 			}
 			d.gitRequestsCounter.WithLabelValues("success").Inc()
+
+			codeowners, err := codeowners.NewCodeowners(proj.Path, configPath)
+			if err != nil {
+				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
+			}
+			// Create subprojects based on expanded paths
+			err = d.exploreProjectFiles(proj.Path, codeowners, proj, &subProjects)
+			proj.SubProjects = subProjects
+			if err != nil {
+				d.logger.Warn(fmt.Sprintf("Failed to explore project files for %s: %s", proj.Name, err.Error()))
+			}
+			projects = append(projects, proj)
 		}
-		projects = append(projects, providerProjects...)
 	}
 
 	results := d.checker.Run(context.Background(), projects)
@@ -122,18 +136,70 @@ func (d *Daemon) tick() {
 	d.logger.Info("projects checked")
 }
 
-func (d *Daemon) Start() {
+func (d *Daemon) exploreProjectFiles(projectPath string, codeowners *codeowners.Codeowners, proj project.Project, projects *[]project.Project) error {
+	// Use filepath.Walk to explore all files in the project directory
+	return filepath.Walk(projectPath, func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			relPath, err := filepath.Rel(projectPath, filePath)
+			if err != nil {
+				return err
+			}
+			// Assign team owner based on CODEOWNERS
+			team, exists := codeowners.GetOwners(relPath)
+			if exists {
+				labels := make(map[string]string)
+				for k, v := range proj.Labels {
+					labels[k] = v
+				}
+				labels["team"] = team
+
+				subProject := project.Project{
+					Name:     proj.Name,
+					URL:      proj.URL,
+					Branch:   proj.Branch,
+					Path:     proj.Path,
+					FilePath: relPath,
+					Labels:   labels,
+				}
+				*projects = append(*projects, subProject)
+			} else {
+				// Add the path with the same team as the project team
+				labels := make(map[string]string)
+				for k, v := range proj.Labels {
+					labels[k] = v
+				}
+				labels["team"] = proj.Labels["team"] // Assuming team is stored in proj.Labels
+
+				subProject := project.Project{
+					Name:     proj.Name,
+					URL:      proj.URL,
+					Branch:   proj.Branch,
+					Path:     proj.Path,
+					FilePath: relPath,
+					Labels:   labels,
+				}
+				*projects = append(*projects, subProject)
+			}
+		}
+		return nil
+	})
+}
+
+func (d *Daemon) Start(configPath string) {
 	d.logger.Info("starting daemon")
 	ticker := time.NewTicker(d.interval)
 	d.ticker = ticker
 	go func() {
-		d.tick()
+		d.tick(configPath)
 		for {
 			select {
 			case <-d.done:
 				return
 			case <-ticker.C:
-				d.tick()
+				d.tick(configPath)
 			}
 		}
 	}()

@@ -8,14 +8,15 @@ import (
 )
 
 type Config struct {
-	HTTP      HTTPConfig      `validate:"omitempty"`
-	Providers ProvidersConfig `validate:"omitempty"`
-	Groups    []Group         `validate:"dive"`
-	Checks    []Check         `validate:"dive"`
-	Rules     []Rule          `validate:"dive"`
-	Labels    []string        `validate:"dive"`
-	Interval  int
-	Git       GitConfig
+	HTTP              HTTPConfig      `validate:"omitempty"`
+	Providers         ProvidersConfig `validate:"omitempty"`
+	Groups            []Group         `validate:"dive"`
+	Checks            []Check         `validate:"dive"`
+	Rules             []Rule          `validate:"dive"`
+	Labels            []string        `validate:"dive"`
+	Interval          int
+	Git               GitConfig
+	CodeownerOverride map[string]string `yaml:"codeowner-override"`
 }
 
 type ProvidersConfig struct {
@@ -55,7 +56,7 @@ type FileRule struct {
 }
 
 type GrepRule struct {
-	Path           string `validate:"required"`
+	Path           string
 	Pattern        string `validate:"required"`
 	Include        string
 	ExtendedRegexp bool `yaml:"extended-regexp"`
@@ -83,9 +84,15 @@ func (c Check) IsAND() bool {
 }
 
 type Group struct {
-	Name   string   `validate:"required"`
-	Checks []string `validate:"required,min=1"`
+	Name   string      `validate:"required"`
+	Files  FilesConfig `yaml:"files"`
+	Checks []string    `validate:"required,min=1"`
 	When   []string
+}
+
+type FilesConfig struct {
+	ApplyToFiles bool   `yaml:"apply-to-files"`
+	FilesPattern string `yaml:"files-pattern"`
 }
 
 func New(path string) (*Config, []byte, error) {

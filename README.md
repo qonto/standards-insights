@@ -88,6 +88,23 @@ Checks supports 2 different operators to evaluate `rules`: `and` and `or`.
 
 Finally, we configure `groups`: groups contains checks to execute on a project when a condition is true. In this example, the group named `golang` will only be executed on projects where `golang-project` is valid (so, when the `go.mod` file exists). Thanks to the `when` condition, we can specify which check should be executed on which project.
 
+Normally groups and checks within it are executed at project level. It is possible to configure a group to be executed at file level. In order to so, you have to set the `apply-to-files` to true under the `files` block as show below:
+
+```yaml
+  - name: paseto-group
+    files:
+      apply-to-files: true
+      files-pattern: "controller.rb"
+    checks:
+      - paseto-migration-check
+    when:
+      - ruby-controller
+      - ruby-projects
+```
+
+When `apply-to-files` is set to true all the files of a project are evaluated. But if you want to evaluate only some files, you can do so by setting `apply-to-files` to true and `files-pattern` to the pattern of the files you want to evaluate. The configuration example above will execute the `paseto-migration-check` check on all the files matching the `files-pattern` pattern. Therefore there will be one check result per file.
+Only for certain rules makes sense to apply them at file level. Check the `doc/rules` for more information. For assigning ownership to a file, we support [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) file parsing. If the project has a CODEOWNERS file, the ownership will be extracted and added to the file labels. If it's not the case, the owner will be extracted as usual according to the provider.
+
 If you navigate in a Golang project (for example, the Standards Insights repository itself) and run `standards-insights run --config config.yaml`, you will get:
 
 ```

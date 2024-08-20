@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-playground/validator/v10 v10.22.0
+	github.com/hairyhenderson/go-codeowners v0.5.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0

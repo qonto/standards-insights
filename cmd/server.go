@@ -64,7 +64,7 @@ func serverCmd(configPath, logLevel, logFormat *string) *cobra.Command {
 			}
 			daemon, err := daemon.New(checker, providers, projectMetrics, logger, (time.Duration(config.Interval) * time.Second), git, registry)
 			exit(err)
-			daemon.Start()
+			daemon.Start(*configPath)
 
 			go func() {
 				for sig := range signals {

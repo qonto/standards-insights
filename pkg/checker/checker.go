@@ -3,6 +3,7 @@ package checker
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"log/slog"
 
@@ -37,8 +38,8 @@ func NewChecker(logger *slog.Logger, ruler Ruler, checks []config.Check, groups 
 }
 
 func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggregates.ProjectResult {
-	projectResults := make([]aggregates.ProjectResult, len(projects))
-	for i, project := range projects {
+	projectResults := make([]aggregates.ProjectResult, 0)
+	for _, project := range projects {
 		c.logger.Info("checking project " + project.Name)
 		projectResult := aggregates.ProjectResult{
 			Labels:       project.Labels,
@@ -52,8 +53,41 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 			}
 			checkResults := c.executeGroup(ctx, group, project)
 			projectResult.CheckResults = append(projectResult.CheckResults, checkResults...)
+
+			if group.Files.ApplyToFiles {
+				// use group pattern to filter sub projects
+				filteredSubProjects := filterSubProjects(project.SubProjects, group.Files.FilesPattern)
+				// print group name, project name and apply on sub projects
+				c.logger.Debug(fmt.Sprintf("applying group %s for project %s and sub projects", group.Name, project.Name))
+				for _, subProject := range filteredSubProjects {
+					if c.shouldSkipGroup(ctx, group, subProject) {
+						c.logger.Debug(fmt.Sprintf("skipping group %s for file %s", group.Name, subProject.FilePath))
+						continue
+					}
+					subProjectResult := aggregates.ProjectResult{
+						Labels:       subProject.Labels,
+						Name:         subProject.Name,
+						FilePath:     subProject.FilePath,
+						CheckResults: []aggregates.CheckResult{},
+					}
+					subProjectCheckResults := c.executeGroup(ctx, group, subProject)
+					subProjectResult.CheckResults = append(subProjectResult.CheckResults, subProjectCheckResults...)
+					projectResults = append(projectResults, subProjectResult)
+				}
+			}
 		}
-		projectResults[i] = projectResult
+		projectResults = append(projectResults, projectResult)
 	}
 	return projectResults
+}
+
+func filterSubProjects(projects []project.Project, pattern string) []project.Project {
+	var filteredProjects []project.Project
+	re := regexp.MustCompile(pattern)
+	for _, proj := range projects {
+		if re.MatchString(proj.FilePath) {
+			filteredProjects = append(filteredProjects, proj)
+		}
+	}
+	return filteredProjects
 }
