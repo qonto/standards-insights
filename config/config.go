@@ -8,15 +8,15 @@ import (
 )
 
 type Config struct {
-	HTTP      HTTPConfig      `validate:"omitempty"`
-	Providers ProvidersConfig `validate:"omitempty"`
-	Groups    []Group         `validate:"dive"`
-	Checks    []Check         `validate:"dive"`
-	Rules     []Rule          `validate:"dive"`
-	Labels    []string        `validate:"dive"`
-	Interval  int
-	Git       GitConfig
-	OwnerMap  map[string]string `yaml:"owner-map"`
+	HTTP              HTTPConfig      `validate:"omitempty"`
+	Providers         ProvidersConfig `validate:"omitempty"`
+	Groups            []Group         `validate:"dive"`
+	Checks            []Check         `validate:"dive"`
+	Rules             []Rule          `validate:"dive"`
+	Labels            []string        `validate:"dive"`
+	Interval          int
+	Git               GitConfig
+	CodeownerOverride map[string]string `yaml:"codeowner-override"`
 }
 
 type ProvidersConfig struct {

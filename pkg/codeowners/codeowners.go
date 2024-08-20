@@ -44,7 +44,7 @@ func (c *Codeowners) GetOwners(path string) (string, bool) {
 		// If config cannot be found, use an empty ownerMap
 		ownerMap = map[string]string{}
 	} else {
-		ownerMap = config.OwnerMap
+		ownerMap = config.CodeownerOverride
 	}
 
 	owner := owners[0]
