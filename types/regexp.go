@@ -1,13 +1,15 @@
 package types
 
-import "regexp"
+import (
+	"github.com/dlclark/regexp2"
+)
 
 type Regexp struct {
-	*regexp.Regexp
+	*regexp2.Regexp
 }
 
 func RegexpFromString(pattern string) (*Regexp, error) {
-	regexp, err := regexp.Compile(pattern)
+	regexp, err := regexp2.Compile(pattern, regexp2.DefaultUnmarshalOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -18,7 +20,7 @@ func RegexpFromString(pattern string) (*Regexp, error) {
 
 // UnmarshalText unmarshals json into a regexp.Regexp
 func (r *Regexp) UnmarshalText(b []byte) error {
-	regex, err := regexp.Compile(string(b))
+	regex, err := regexp2.Compile(string(b), regexp2.DefaultUnmarshalOptions)
 	if err != nil {
 		return err
 	}
