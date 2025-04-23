@@ -40,8 +40,12 @@ func (rule *FileRule) Do(ctx context.Context, project project.Project) error {
 		scanner := bufio.NewScanner(file)
 
 		for scanner.Scan() {
-			line := scanner.Bytes()
-			if rule.Contains.Regexp.Match(line) {
+			line := scanner.Text()
+			matched, err := rule.Contains.Regexp.MatchString(line)
+			if err != nil {
+				return fmt.Errorf("error while reading file %s: %w", rule.Path, err)
+			}
+			if matched {
 				return nil
 			}
 		}
@@ -62,8 +66,12 @@ func (rule *FileRule) Do(ctx context.Context, project project.Project) error {
 		scanner := bufio.NewScanner(file)
 
 		for scanner.Scan() {
-			line := scanner.Bytes()
-			if rule.NotContains.Regexp.Match(line) {
+			line := scanner.Text()
+			matched, err := rule.NotContains.Regexp.MatchString(line)
+			if err != nil {
+				return fmt.Errorf("error while reading file %s: %w", rule.Path, err)
+			}
+			if matched {
 				return fmt.Errorf("pattern %s found in file %s", rule.NotContains, rule.Path)
 			}
 		}
