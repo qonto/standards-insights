@@ -13,6 +13,7 @@ import (
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v71/github"
 	"github.com/qonto/standards-insights/config"
+	"github.com/qonto/standards-insights/pkg/daemon"
 	"github.com/qonto/standards-insights/pkg/project"
 )
 
@@ -149,4 +150,19 @@ func (c *Client) makeProjects(repos []*github.Repository) []project.Project {
 		}
 	}
 	return result
+}
+
+func (c *Client) ConfigureGit(g daemon.Git) error {
+	itr, err := ghinstallation.New(http.DefaultTransport, c.config.AppID, c.config.InstallationID, []byte(c.config.PrivateKey))
+	if err != nil {
+		return err
+	}
+
+	token, err := itr.Token(context.Background())
+	if err != nil {
+		return err
+	}
+
+	g.SetToken(token)
+	return nil
 }

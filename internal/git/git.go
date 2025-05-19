@@ -102,3 +102,8 @@ func (g *Git) Pull(path string, ref string) error {
 	}
 	return nil
 }
+
+func (g *Git) SetToken(token string) {
+	g.config.BasicAuth.Username = "x-access-token"
+	g.config.BasicAuth.Password = token
+}
