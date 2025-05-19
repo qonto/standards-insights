@@ -1,8 +1,6 @@
 module github.com/qonto/standards-insights
 
-go 1.22.0
-
-toolchain go1.22.3
+go 1.24.3
 
 require (
 	github.com/dlclark/regexp2 v1.11.5
