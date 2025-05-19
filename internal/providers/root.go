@@ -6,6 +6,7 @@ import (
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/internal/providers/aggregates"
 	"github.com/qonto/standards-insights/internal/providers/argocd"
+	"github.com/qonto/standards-insights/internal/providers/github"
 	"github.com/qonto/standards-insights/internal/providers/gitlab"
 	"github.com/qonto/standards-insights/internal/providers/static"
 )
@@ -18,6 +19,13 @@ func NewProviders(logger *slog.Logger, config config.ProvidersConfig) ([]aggrega
 			return nil, err
 		}
 		result = append(result, argoProvider)
+	}
+	if config.Github.URL != "" {
+		githubProvider, err := github.New(logger, config.Github)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, githubProvider)
 	}
 	if config.Gitlab.URL != "" {
 		gitlabProvider, err := gitlab.New(logger, config.Gitlab)
