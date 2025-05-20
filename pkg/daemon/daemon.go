@@ -18,6 +18,7 @@ import (
 type Git interface {
 	Clone(url string, ref string, path string) error
 	Pull(path string, ref string) error
+	SetToken(token string)
 }
 
 type Checker interface {
@@ -26,6 +27,10 @@ type Checker interface {
 
 type Metrics interface {
 	Load(results []checkeraggregates.ProjectResult)
+}
+
+type GitProvider interface {
+	ConfigureGit(Git) error
 }
 
 type Daemon struct {
@@ -108,6 +113,16 @@ func (d *Daemon) tick(configPath string) {
 			continue
 		}
 		d.providerRequestsCounter.WithLabelValues(providerName, "success").Inc()
+
+		// If it's a GitHub provider, configure Git with the installation token
+		if githubProvider, ok := provider.(interface{ ConfigureGit(Git) error }); ok {
+			err := githubProvider.ConfigureGit(d.git)
+			if err != nil {
+				d.logger.Error(fmt.Sprintf("fail to configure Git with GitHub token: %s", err.Error()))
+				continue
+			}
+		}
+
 		for _, proj := range providerProjects {
 			err = d.cloneOrPull(proj)
 			if err != nil {

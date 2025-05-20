@@ -3,10 +3,12 @@ module github.com/qonto/standards-insights
 go 1.24.3
 
 require (
+	github.com/bradleyfalzon/ghinstallation/v2 v2.15.0
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-playground/validator/v10 v10.22.0
+	github.com/google/go-github/v71 v71.0.0
 	github.com/hairyhenderson/go-codeowners v0.5.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.8.1
@@ -30,6 +32,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

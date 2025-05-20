@@ -32,6 +32,7 @@ Standards Insights is configured through a yaml configuration file. The `config.
 Create a new `config.yaml` file containing:
 
 ```yaml
+interval: 30
 
 rules:
   - name: golang-project

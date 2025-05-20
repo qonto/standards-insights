@@ -22,6 +22,7 @@ type Config struct {
 type ProvidersConfig struct {
 	ArgoCD ArgoCDConfig      `validate:"omitempty"`
 	Static []project.Project `validate:"omitempty,dive"`
+	Github GithubConfig      `validate:"omitempty"`
 	Gitlab GitlabConfig      `validate:"omitempty"`
 }
 
@@ -38,6 +39,16 @@ type GitlabConfig struct {
 	Topics   []string
 	Search   string
 	BasePath string `yaml:"base-path"`
+}
+
+type GithubConfig struct {
+	URL            string `validate:"required"`
+	AppID          int64
+	InstallationID int64
+	PrivateKey     string
+	Topics         []string
+	Organizations  []string
+	BasePath       string `yaml:"base-path"`
 }
 
 type Rule struct {
