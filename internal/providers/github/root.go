@@ -160,7 +160,8 @@ func (c *Client) ConfigureGit(g daemon.Git) error {
 
 	token, err := itr.Token(context.Background())
 	if err != nil {
-		return err
+		c.logger.Error("failed to generate GitHub installation token", "error", err)
+		return fmt.Errorf("failed to generate GitHub installation token: %w", err)
 	}
 
 	g.SetToken(token)
