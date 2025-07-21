@@ -116,6 +116,7 @@ func (d *Daemon) tick(configPath string) {
 
 		// If it's a GitHub provider, configure Git with the installation token
 		if githubProvider, ok := provider.(interface{ ConfigureGit(Git) error }); ok {
+			d.logger.Debug(fmt.Sprintf("configuring Git with GitHub token for provider %s", providerName))
 			err := githubProvider.ConfigureGit(d.git)
 			if err != nil {
 				d.logger.Error(fmt.Sprintf("fail to configure Git with GitHub token: %s", err.Error()))
