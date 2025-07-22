@@ -107,6 +107,10 @@ func (d *Daemon) tick(configPath string) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		providerProjects, err := provider.FetchProjects(ctx)
 		cancel()
+		if ctx.Err() == context.DeadlineExceeded {
+			d.logger.Warn(fmt.Sprintf("timeout reached for provider %s: operation took more than 30s", providerName))
+		}
+		d.logger.Debug(fmt.Sprintf("context canceled for provider %s (fetch status: %v)", providerName, err == nil))
 		if err != nil {
 			d.logger.Error(fmt.Sprintf("fail to call provider %s: %s", providerName, err.Error()))
 			d.providerRequestsCounter.WithLabelValues(providerName, "failure").Inc()
