@@ -9,6 +9,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v71/github"
@@ -153,16 +154,42 @@ func (c *Client) makeProjects(repos []*github.Repository) []project.Project {
 }
 
 func (c *Client) ConfigureGit(g daemon.Git) error {
-	itr, err := ghinstallation.New(http.DefaultTransport, c.config.AppID, c.config.InstallationID, []byte(c.config.PrivateKey))
-	if err != nil {
-		return err
+	// Access the transport that's already being used by the GitHub client
+	transport, ok := c.client.Client().Transport.(*ghinstallation.Transport)
+	if !ok {
+		// If for some reason the transport is not a ghinstallation.Transport,
+		// create a new one
+		c.logger.Debug("creating new GitHub transport")
+		itr, err := ghinstallation.New(http.DefaultTransport, c.config.AppID, c.config.InstallationID, []byte(c.config.PrivateKey))
+		if err != nil {
+			return err
+		}
+
+		token, err := itr.Token(context.Background())
+		if err != nil {
+			c.logger.Error("failed to generate GitHub installation token", "error", err)
+			return fmt.Errorf("failed to generate GitHub installation token: %w", err)
+		}
+
+		g.SetToken(token)
+		return nil
 	}
 
-	token, err := itr.Token(context.Background())
+	// Get token - the transport will handle token refreshing internally
+	// when the token is expired or about to expire
+	token, err := transport.Token(context.Background())
 	if err != nil {
 		c.logger.Error("failed to generate GitHub installation token", "error", err)
 		return fmt.Errorf("failed to generate GitHub installation token: %w", err)
 	}
+
+	// Log token expiration information for debugging
+	expiresAt, refreshAt, _ := transport.Expiry()
+	c.logger.Debug(
+		"using GitHub token",
+		"expires_at", expiresAt.Format(time.RFC3339),
+		"will_refresh_at", refreshAt.Format(time.RFC3339),
+	)
 
 	g.SetToken(token)
 	return nil

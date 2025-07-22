@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -47,6 +48,30 @@ type Daemon struct {
 }
 
 func (d *Daemon) cloneOrPull(project project.Project) error {
+	// Check if the project is hosted on GitHub
+	isGitHubRepo := strings.Contains(project.URL, "github.com")
+
+	if isGitHubRepo {
+		d.logger.Debug(fmt.Sprintf("detected GitHub repository: %s", project.URL))
+		// Find a GitHub provider to configure Git with the proper token
+		foundGitHubProvider := false
+		for _, provider := range d.providers {
+			if githubProvider, ok := provider.(GitProvider); ok {
+				d.logger.Debug(fmt.Sprintf("configuring Git with GitHub token for provider %s", provider.Name()))
+				err := githubProvider.ConfigureGit(d.git)
+				if err != nil {
+					return fmt.Errorf("failed to configure Git with GitHub token: %w", err)
+				}
+				foundGitHubProvider = true
+				break
+			}
+		}
+
+		if !foundGitHubProvider {
+			d.logger.Warn(fmt.Sprintf("no GitHub provider found for repository %s, authentication may fail", project.URL))
+		}
+	}
+
 	_, err := os.Stat(project.Path)
 	if err != nil && !os.IsNotExist(err) {
 		return err
@@ -63,7 +88,8 @@ func New(checker Checker,
 	logger *slog.Logger,
 	interval time.Duration,
 	git Git,
-	registry *prometheus.Registry) (*Daemon, error) {
+	registry *prometheus.Registry,
+) (*Daemon, error) {
 	gitRequestsCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "git_requests_total",
@@ -117,16 +143,6 @@ func (d *Daemon) tick(configPath string) {
 			continue
 		}
 		d.providerRequestsCounter.WithLabelValues(providerName, "success").Inc()
-
-		// If it's a GitHub provider, configure Git with the installation token
-		if githubProvider, ok := provider.(interface{ ConfigureGit(Git) error }); ok {
-			d.logger.Debug(fmt.Sprintf("configuring Git with GitHub token for provider %s", providerName))
-			err := githubProvider.ConfigureGit(d.git)
-			if err != nil {
-				d.logger.Error(fmt.Sprintf("fail to configure Git with GitHub token: %s", err.Error()))
-				continue
-			}
-		}
 
 		for _, proj := range providerProjects {
 			err = d.cloneOrPull(proj)
