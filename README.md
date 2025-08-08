@@ -34,6 +34,9 @@ Create a new `config.yaml` file containing:
 ```yaml
 interval: 30
 
+labels:
+  - team
+
 rules:
   - name: golang-project
     files:

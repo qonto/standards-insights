@@ -156,6 +156,14 @@ func (d *Daemon) tick(configPath string) {
 			codeowners, err := codeowners.NewCodeowners(proj.Path, configPath)
 			if err != nil {
 				d.logger.Warn(fmt.Sprintf("Failed to parse CODEOWNERS for project %s: %s", proj.Name, err.Error()))
+			} else {
+				// Assign team to root project from CODEOWNERS
+				if team, exists := codeowners.GetOwners("."); exists {
+					if proj.Labels == nil {
+						proj.Labels = make(map[string]string)
+					}
+					proj.Labels["team"] = team
+				}
 			}
 			// Create subprojects based on expanded paths
 			err = d.exploreProjectFiles(proj.Path, codeowners, proj, &subProjects)
