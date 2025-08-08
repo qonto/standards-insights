@@ -16,7 +16,7 @@ func NewCodeowners(path string, configPath string) (*Codeowners, error) {
 	// open filesystem rooted at current working directory
 	fsys := os.DirFS(path)
 
-	c, err := codeowners.FromFileWithFS(fsys, "CODEOWNERS")
+	c, err := codeowners.FromFileWithFS(fsys, ".")
 	if err != nil {
 		return nil, err
 	}
