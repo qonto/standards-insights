@@ -14,26 +14,28 @@ import (
 )
 
 type GrepRule struct {
-	Path           string
-	Include        string
-	Pattern        string
-	ExtendedRegexp bool
-	Recursive      bool
-	Match          bool
-	SkipNotFound   bool
-	NullData       bool
+	Path            string
+	Include         string
+	Pattern         string
+	ExtendedRegexp  bool
+	Recursive       bool
+	Match           bool
+	SkipNotFound    bool
+	NullData        bool
+	InsensitiveCase bool
 }
 
 func NewGrepRule(config config.GrepRule) *GrepRule {
 	return &GrepRule{
-		Path:           config.Path,
-		Recursive:      config.Recursive,
-		Pattern:        config.Pattern,
-		ExtendedRegexp: config.ExtendedRegexp,
-		Include:        config.Include,
-		Match:          config.Match,
-		SkipNotFound:   config.SkipNotFound,
-		NullData:       config.NullData,
+		Path:            config.Path,
+		Recursive:       config.Recursive,
+		Pattern:         config.Pattern,
+		ExtendedRegexp:  config.ExtendedRegexp,
+		Include:         config.Include,
+		Match:           config.Match,
+		SkipNotFound:    config.SkipNotFound,
+		NullData:        config.NullData,
+		InsensitiveCase: config.InsensitiveCase,
 	}
 }
 
@@ -57,9 +59,12 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 	if rule.NullData {
 		arguments = append(arguments, "-z")
 	}
+	if rule.InsensitiveCase {
+		arguments = append(arguments, "-i")
+	}
 	arguments = append(arguments, rule.Pattern, path)
 
-	cmd := exec.CommandContext(ctx, "grep", arguments...) //nolint
+	cmd := exec.CommandContext(ctx, "grep", arguments...) // nolint
 
 	var stdErrBuffer bytes.Buffer
 	var stdOutBuffer bytes.Buffer

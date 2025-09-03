@@ -168,6 +168,31 @@ func TestGrepRule(t *testing.T) {
 				NullData:       true,
 			},
 		},
+		{
+			rule: rules.GrepRule{
+				Path:            "_testdata",
+				Recursive:       true,
+				Include:         "file1",
+				Pattern:         "(AZERTY|<3_GO)",
+				ExtendedRegexp:  true,
+				Match:           true,
+				NullData:        false,
+				InsensitiveCase: false,
+			},
+			error: "no match for pattern",
+		},
+		{
+			rule: rules.GrepRule{
+				Path:            "_testdata",
+				Recursive:       true,
+				Include:         "file1",
+				Pattern:         "(AZERTY|<3_GO)",
+				ExtendedRegexp:  true,
+				Match:           true,
+				NullData:        false,
+				InsensitiveCase: true,
+			},
+		},
 	}
 	for _, c := range cases {
 		err := c.rule.Do(context.Background(), project)
