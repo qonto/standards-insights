@@ -64,7 +64,7 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 	}
 	arguments = append(arguments, rule.Pattern, path)
 
-	cmd := exec.CommandContext(ctx, "grep", arguments...) // nolint
+	cmd := exec.CommandContext(ctx, "grep", arguments...) //nolint
 
 	var stdErrBuffer bytes.Buffer
 	var stdOutBuffer bytes.Buffer
