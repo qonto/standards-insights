@@ -67,14 +67,15 @@ type FileRule struct {
 }
 
 type GrepRule struct {
-	Path           string
-	Pattern        string `validate:"required"`
-	Include        string
-	ExtendedRegexp bool `yaml:"extended-regexp"`
-	Recursive      bool
-	Match          bool
-	SkipNotFound   bool `yaml:"skip-not-found"`
-	NullData       bool `yaml:"null-data"`
+	Path            string
+	Pattern         string `validate:"required"`
+	Include         string
+	ExtendedRegexp  bool `yaml:"extended-regexp"`
+	Recursive       bool
+	Match           bool
+	SkipNotFound    bool `yaml:"skip-not-found"`
+	NullData        bool `yaml:"null-data"`
+	InsensitiveCase bool `yaml:"insensitive-case"`
 }
 
 type ProjectRule struct {
