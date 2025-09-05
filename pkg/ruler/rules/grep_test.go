@@ -185,8 +185,20 @@ func TestGrepRule(t *testing.T) {
 			rule: rules.GrepRule{
 				Path:            "_testdata",
 				Recursive:       true,
-				Include:         "file1",
-				Pattern:         "(AZERTY|<3_GO)",
+				ExcludeDir:      "folder",
+				Pattern:         "qo.*",
+				ExtendedRegexp:  true,
+				Match:           true,
+				NullData:        false,
+				InsensitiveCase: false,
+			},
+			error: "no match for pattern",
+		},
+		{
+			rule: rules.GrepRule{
+				Path:            "_testdata",
+				Recursive:       true,
+				Pattern:         "qo.*",
 				ExtendedRegexp:  true,
 				Match:           true,
 				NullData:        false,
