@@ -70,7 +70,8 @@ type GrepRule struct {
 	Path            string
 	Pattern         string `validate:"required"`
 	Include         string
-	ExtendedRegexp  bool `yaml:"extended-regexp"`
+	ExcludeDir      string `yaml:"exclude-dir"`
+	ExtendedRegexp  bool   `yaml:"extended-regexp"`
 	Recursive       bool
 	Match           bool
 	SkipNotFound    bool `yaml:"skip-not-found"`

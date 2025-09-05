@@ -17,6 +17,7 @@ type GrepRule struct {
 	Path            string
 	Include         string
 	Pattern         string
+	ExcludeDir      string
 	ExtendedRegexp  bool
 	Recursive       bool
 	Match           bool
@@ -30,6 +31,7 @@ func NewGrepRule(config config.GrepRule) *GrepRule {
 		Path:            config.Path,
 		Recursive:       config.Recursive,
 		Pattern:         config.Pattern,
+		ExcludeDir:      config.ExcludeDir,
 		ExtendedRegexp:  config.ExtendedRegexp,
 		Include:         config.Include,
 		Match:           config.Match,
@@ -52,6 +54,9 @@ func (rule *GrepRule) Do(ctx context.Context, project project.Project) error {
 	}
 	if rule.Include != "" {
 		arguments = append(arguments, "--include", rule.Include)
+	}
+	if rule.ExcludeDir != "" {
+		arguments = append(arguments, "--exclude-dir", rule.ExcludeDir)
 	}
 	if rule.ExtendedRegexp {
 		arguments = append(arguments, "--extended-regexp")
