@@ -19,6 +19,7 @@ Available options are:
 
 - `path`: the file or directory to check. The path is not mandatory when the rule is used within a check of a group that is applied to files. In this case, the rule will be applied to all the project files that match the pattern.
 - `pattern`: the string pattern to search for (mandatory)
+- `exclude-dir`: the string pattern representing command-line directories to skip
 - `recursive`: recursively search subdirectories listed (grep `-r` option)
 - `match`: if set to true, the module will be successful if the pattern is found. Default to false, where the module will be successful if the pattern is **not** found
 - `extended-regexp`: if set to true, the pattern is treated as an extended regular expression (grep `-E` option)
