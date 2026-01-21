@@ -31,6 +31,7 @@ func New(registry *prometheus.Registry, extraLabels []string) (*Project, error) 
 }
 
 func (p *Project) Load(results []aggregates.ProjectResult) {
+	p.checksGauge.Reset()
 	for _, project := range results {
 		projectLabels := project.Labels
 		for _, result := range project.CheckResults {
