@@ -3,6 +3,8 @@ package checker_test
 import (
 	"context"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/qonto/standards-insights/config"
@@ -10,6 +12,7 @@ import (
 	"github.com/qonto/standards-insights/pkg/project"
 	"github.com/qonto/standards-insights/pkg/ruler"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRun(t *testing.T) {
@@ -82,4 +85,41 @@ func TestRun(t *testing.T) {
 	assert.True(t, results[0].CheckResults[0].Success)
 	assert.False(t, results[0].CheckResults[1].Success)
 	assert.True(t, results[0].CheckResults[2].Success)
+}
+
+func TestRunWithSkipConfig(t *testing.T) {
+	yes := true
+	logger := slog.Default()
+	r := ruler.NewRuler(logger, []config.Rule{
+		{Name: "rule1", Simple: &yes},
+	})
+	checks := []config.Check{
+		{Name: "check1", Rules: []string{"rule1"}},
+		{Name: "check2", Rules: []string{"rule1"}},
+		{Name: "check3", Rules: []string{"rule1"}},
+	}
+	groups := []config.Group{
+		{Name: "group1", Checks: []string{"check1", "check2"}},
+		{Name: "group2", Checks: []string{"check3"}},
+	}
+	c := checker.NewChecker(logger, r, checks, groups)
+
+	// Repo opts out of check1 (individual) and group2 (whole group).
+	dir := t.TempDir()
+	err := os.WriteFile(filepath.Join(dir, ".standards-insights.yaml"), []byte(`
+skip:
+  groups:
+    - group2
+  checks:
+    - check1
+`), 0o600)
+	require.NoError(t, err)
+
+	projects := []project.Project{{Name: "project1", Path: dir}}
+	results := c.Run(context.Background(), projects)
+
+	require.Equal(t, 1, len(results))
+	// check1 (skipped) and check3 (group2 skipped) are gone; only check2 remains.
+	require.Equal(t, 1, len(results[0].CheckResults))
+	assert.Equal(t, "check2", results[0].CheckResults[0].Name)
 }

@@ -41,17 +41,26 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 	projectResults := make([]aggregates.ProjectResult, 0)
 	for _, project := range projects {
 		c.logger.Info("checking project " + project.Name)
+		skippedGroups, skippedChecks, err := loadSkipConfig(project.Path)
+		if err != nil {
+			c.logger.Warn(fmt.Sprintf("ignoring malformed %s for project %s: %v", skipConfigFileName, project.Name, err))
+		}
+		c.warnUnknownSkips(project, skippedGroups, skippedChecks)
 		projectResult := aggregates.ProjectResult{
 			Labels:       project.Labels,
 			Name:         project.Name,
 			CheckResults: []aggregates.CheckResult{},
 		}
 		for _, group := range c.groups {
+			if skippedGroups[group.Name] {
+				c.logger.Debug(fmt.Sprintf("group %s skipped by %s for project %s", group.Name, skipConfigFileName, project.Name))
+				continue
+			}
 			if c.shouldSkipGroup(ctx, group, project) {
 				c.logger.Debug(fmt.Sprintf("skipping group %s for project %s", group.Name, project.Name))
 				continue
 			}
-			checkResults := c.executeGroup(ctx, group, project)
+			checkResults := c.executeGroup(ctx, group, project, skippedChecks)
 			projectResult.CheckResults = append(projectResult.CheckResults, checkResults...)
 
 			if group.Files.ApplyToFiles {
@@ -70,7 +79,7 @@ func (c *Checker) Run(ctx context.Context, projects []project.Project) []aggrega
 						FilePath:     subProject.FilePath,
 						CheckResults: []aggregates.CheckResult{},
 					}
-					subProjectCheckResults := c.executeGroup(ctx, group, subProject)
+					subProjectCheckResults := c.executeGroup(ctx, group, subProject, skippedChecks)
 					subProjectResult.CheckResults = append(subProjectResult.CheckResults, subProjectCheckResults...)
 					projectResults = append(projectResults, subProjectResult)
 				}

@@ -2,6 +2,7 @@ package checker
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/qonto/standards-insights/config"
 	"github.com/qonto/standards-insights/pkg/checker/aggregates"
@@ -18,9 +19,13 @@ func (c *Checker) shouldSkipGroup(ctx context.Context, group config.Group, proje
 	return false
 }
 
-func (c *Checker) executeGroup(ctx context.Context, group config.Group, project project.Project) []aggregates.CheckResult {
+func (c *Checker) executeGroup(ctx context.Context, group config.Group, project project.Project, skippedChecks map[string]bool) []aggregates.CheckResult {
 	result := []aggregates.CheckResult{}
 	for _, checkName := range group.Checks {
+		if skippedChecks[checkName] {
+			c.logger.Debug(fmt.Sprintf("check %s skipped by %s for project %s", checkName, skipConfigFileName, project.Name))
+			continue
+		}
 		// For now let's consider that we checked when the config is built
 		// that checks always exist
 		check := c.checks[checkName]

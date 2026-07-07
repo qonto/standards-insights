@@ -62,6 +62,15 @@ git:
 
 
 
+# A checked repository can opt out of specific checks and/or groups by committing a
+# `.standards-insights.yaml` file to its root (similar to a `.rubocop.yml`):
+#
+#   skip:
+#     groups:
+#       - golang            # skips every check in the "golang" group
+#     checks:
+#       - go-version-latest # skips this check wherever it runs
+
 groups:
   - name: golang
     checks:

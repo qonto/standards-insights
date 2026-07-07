@@ -190,3 +190,26 @@ check_result_success{category="upgrade",name="go-version-latest",project="standa
 
 Both checks were successful, so the value of the metric is `1`. In case of failure, the value would be `0`.
 
+### Per-repository skip configuration
+
+A repository can opt out of specific checks and/or groups by committing a
+`.standards-insights.yaml` file to its root, similar to disabling a rule in a `.rubocop.yml`.
+This lets repository owners suppress irrelevant or intentionally-non-compliant checks without
+changing the central configuration.
+
+```yaml
+# .standards-insights.yaml (at the root of the checked repository)
+skip:
+  groups:
+    - golang            # skips every check in the "golang" group
+  checks:
+    - go-version-latest # skips this check wherever it runs
+```
+
+- Both `groups` and `checks` are optional; you can provide either or both.
+- Names must match the group/check names configured in Standards Insights. Unknown names are
+  logged as warnings.
+- Skipped checks are not executed and produce no Prometheus metric for that repository.
+- The file fails open: if it is missing nothing is skipped, and if it is malformed a warning is
+  logged and all checks still run.
+
